@@ -1,0 +1,18 @@
+{
+  "check_in": {
+    "start": "",
+    "end": ""
+  },
+  "front_desk_hours": {
+    "start": "",
+    "end": ""
+  },
+  "late_arrival_notice_required_after": "",
+  "check_out": {
+    "start": "",
+    "end": ""
+  },
+  "cancellation": {},
+  "pets_allowed": null,
+  "events_allowed": null
+}

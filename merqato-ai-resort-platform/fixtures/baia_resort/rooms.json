@@ -1,0 +1,60 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "total_units": 4,
+  "property_layout": "All units are single-level.",
+  "design_style": "Tropical minimalist",
+  "room_types": [
+    {
+      "name": "Comfort Cottage with Partial Sea View",
+      "inventory": 3,
+      "size_sqm": {
+        "min": 20,
+        "max": 22
+      },
+      "beds": [
+        {
+          "type": "Queen",
+          "quantity": 1
+        }
+      ],
+      "standard_occupancy": 2,
+      "maximum_occupancy": 3,
+      "extra_bed": "Rollaway bed available for the third guest",
+      "features": [
+        "private terrace or patio",
+        "garden views",
+        "air conditioning",
+        "flat-screen TV",
+        "private bathroom",
+        "hot water shower"
+      ]
+    },
+    {
+      "name": "Deluxe Beachfront Suite",
+      "inventory": 1,
+      "size_sqm": {
+        "min": 45,
+        "max": 50
+      },
+      "beds": [
+        {
+          "type": "King",
+          "quantity": 1
+        },
+        {
+          "type": "Large Twin Sofa Bed",
+          "quantity": 1
+        }
+      ],
+      "standard_occupancy": 2,
+      "maximum_occupancy": 4,
+      "features": [
+        "uninterrupted front-row beach view",
+        "large private entrance",
+        "separate seating area"
+      ]
+    }
+  ]
+}

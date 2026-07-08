@@ -1,0 +1,26 @@
+services:
+  # FastAPI agent service — runs the actual CrewAI framework.
+  agent-api:
+    build:
+      context: ./services/agent-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o-mini}
+    restart: unless-stopped
+
+  # Next.js frontend (BFF proxy to agent-api via AGENT_API_URL).
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - AGENT_API_URL=http://agent-api:8000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      - agent-api
+    restart: unless-stopped

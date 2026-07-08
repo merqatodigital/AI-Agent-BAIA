@@ -1,0 +1,47 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "faqs": [
+    {
+      "category": "booking",
+      "question": "How do I get an exact package total?",
+      "answer": "Provide your exact check-in date, check-out date, number of guests, preferred room, and whether you need the airport van. BAIA management will prepare the final quote."
+    },
+    {
+      "category": "arrival",
+      "question": "What time is check-in?",
+      "answer": "Check-in is from 2:00 PM to 9:00 PM. Guests arriving after 6:00 PM must contact BAIA in advance."
+    },
+    {
+      "category": "departure",
+      "question": "What time is check-out?",
+      "answer": "Check-out is from 7:00 AM to 12:00 noon."
+    },
+    {
+      "category": "airport_transfer",
+      "question": "How much is the private airport van?",
+      "answer": "The private van is ₱6,000 one way per vehicle for up to 12 passengers and must be requested at least 48 hours in advance with complete flight details."
+    },
+    {
+      "category": "breakfast",
+      "question": "What time is breakfast?",
+      "answer": "Breakfast is served daily from 8:30 AM to 10:30 AM."
+    },
+    {
+      "category": "breakfast",
+      "question": "How much is breakfast?",
+      "answer": "When breakfast is not included in the room package, cooked-to-order breakfast is approximately ₱400 per adult and ₱400 per child."
+    },
+    {
+      "category": "internet",
+      "question": "How fast is the Wi-Fi?",
+      "answer": "BAIA targets 50+ Mbps over fiber where stable. Local outages and connection drops can occur, with Smart and Globe cellular hotspots used as backups."
+    },
+    {
+      "category": "power",
+      "question": "Does BAIA have backup power?",
+      "answer": "BAIA is connected to the PALECO main grid and has local backup generation. During total grid failures, continuous air conditioning across multiple units may be limited by generator load management."
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+merqato-ai-resort-platform/
+├── .hermes/
+│   └── plan.md
+├── docs/
+│   ├── DEPLOYMENT.md
+│   └── KNOWLEDGE_ARCHITECTURE.md
+├── fixtures/
+│   ├── baia_resort/
+│   │   ├── amenities.json
+│   │   ├── emergency_contacts.json
+│   │   ├── faq.json
+│   │   ├── food_breakfast.json
+│   │   ├── identity.json
+│   │   ├── policies.json
+│   │   ├── rates.json
+│   │   ├── rooms.json
+│   │   ├── transport.json
+│   │   └── wifi_power.json
+│   ├── shared/
+│   │   └── san_vicente/
+│   │       ├── alimanguan_surfing.json
+│   │       ├── island_hopping.json
+│   │       ├── long_beach.json
+│   │       ├── municipality_geography.json
+│   │       ├── overview.json
+│   │       ├── port_barton.json
+│   │       └── waterfalls_expanded.json
+│   └── template/
+│       ├── amenities.json
+│       ├── emergency_contacts.json
+│       ├── faq.json
+│       ├── food_breakfast.json
+│       ├── identity.json
+│       ├── policies.json
+│       ├── rates.json
+│       ├── rooms.json
+│       ├── transport.json
+│       └── wifi_power.json
+├── public/
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── services/
+│   └── agent-api/
+│       ├── app/
+│       │   ├── agents/
+│       │   │   ├── __init__.py
+│       │   │   └── safety.py
+│       │   ├── api/
+│       │   │   ├── __init__.py
+│       │   │   ├── knowledge_routes.py
+│       │   │   └── routes.py
+│       │   ├── crews/
+│       │   │   ├── concierge/
+│       │   │   │   ├── config/
+│       │   │   │   │   ├── agents.yaml
+│       │   │   │   │   └── tasks.yaml
+│       │   │   │   ├── __init__.py
+│       │   │   │   ├── crew.py
+│       │   │   │   └── flow.py
+│       │   │   └── __init__.py
+│       │   ├── knowledge/
+│       │   │   ├── __init__.py
+│       │   │   ├── chunker.py
+│       │   │   ├── embeddings.py
+│       │   │   ├── formatter.py
+│       │   │   ├── ingestion_service.py
+│       │   │   ├── models.py
+│       │   │   ├── publishing_service.py
+│       │   │   ├── qdrant_store.py
+│       │   │   ├── repository.py
+│       │   │   ├── sample_repository.py
+│       │   │   └── supabase_backend.py
+│       │   ├── models/
+│       │   │   ├── __init__.py
+│       │   │   └── schemas.py
+│       │   ├── scripts/
+│       │   │   ├── __init__.py
+│       │   │   └── seed_tenant.py
+│       │   ├── security/
+│       │   │   ├── __init__.py
+│       │   │   └── secrets.py
+│       │   ├── services/
+│       │   │   ├── __init__.py
+│       │   │   ├── concierge_service.py
+│       │   │   ├── credentials.py
+│       │   │   ├── openrouter_validate.py
+│       │   │   └── tenant_resolver.py
+│       │   ├── __init__.py
+│       │   ├── config.py
+│       │   └── main.py
+│       ├── tests/
+│       │   ├── conftest.py
+│       │   ├── qdrant_fakes.py
+│       │   ├── test_admin_knowledge_routes.py
+│       │   ├── test_backend_selection.py
+│       │   ├── test_concierge.py
+│       │   ├── test_crewai.py
+│       │   ├── test_e2e_proof.py
+│       │   ├── test_embeddings_fail_closed.py
+│       │   ├── test_flow.py
+│       │   ├── test_health.py
+│       │   ├── test_knowledge.py
+│       │   ├── test_openrouter_validate.py
+│       │   ├── test_publishing.py
+│       │   ├── test_sample_repository.py
+│       │   ├── test_secrets.py
+│       │   ├── test_supabase_backend.py
+│       │   └── test_tenant_gating.py
+│       ├── Dockerfile
+│       └── pyproject.toml
+├── src/
+│   ├── app/
+│   │   ├── admin/
+│   │   │   ├── approvals/
+│   │   │   │   └── page.tsx
+│   │   │   ├── knowledge/
+│   │   │   │   ├── [category]/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── openrouter/
+│   │   │   │   └── page.tsx
+│   │   │   ├── resort/
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── api/
+│   │   │   ├── admin/
+│   │   │   │   └── knowledge/
+│   │   │   │       └── [...path]/
+│   │   │   │           └── route.ts
+│   │   │   ├── agent/
+│   │   │   │   └── route.ts
+│   │   │   ├── inquiry/
+│   │   │   │   └── route.ts
+│   │   │   ├── mission-control/
+│   │   │   │   └── route.ts
+│   │   │   ├── openrouter/
+│   │   │   │   └── route.ts
+│   │   │   └── resort/
+│   │   │       └── route.ts
+│   │   ├── concierge/
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── admin/
+│   │   │   ├── KnowledgeManager.tsx
+│   │   │   ├── OpenRouterSettings.tsx
+│   │   │   ├── ResortEditor.tsx
+│   │   │   └── StatCard.tsx
+│   │   ├── brand/
+│   │   │   └── Logo.tsx
+│   │   └── guest/
+│   │       ├── ConciergeChat.tsx
+│   │       ├── ConciergeWidget.tsx
+│   │       └── InquiryForm.tsx
+│   ├── lib/
+│   │   ├── data/
+│   │   │   ├── dev-store.ts
+│   │   │   ├── index.ts
+│   │   │   ├── store.ts
+│   │   │   └── supabase-store.ts
+│   │   ├── brand.ts
+│   │   ├── concierge-ui.ts
+│   │   ├── config.ts
+│   │   └── types.ts
+│   ├── middleware.test.ts
+│   └── middleware.ts
+├── supabase/
+│   ├── migrations/
+│   │   └── 0001_knowledge_ingestion_foundation.sql
+│   └── schema.sql
+├── .dockerignore
+├── .gitignore
+├── AGENTS.md
+├── BUILD_AND_RUN.md
+├── CHATGPT_AUDIT.md
+├── CLAUDE.md
+├── CODE_TREE.txt
+├── CODEBASE.md
+├── docker-compose.yml
+├── Dockerfile
+├── eslint.config.mjs
+├── FILE_MANIFEST.csv
+├── FILE_MANIFEST_CHATGPT_AUDITED.csv
+├── GIT_STATE.md
+├── HERMES_AUDIT.md
+├── next-env.d.ts
+├── next.config.ts
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── postcss.config.mjs
+├── README.md
+├── ROADMAP.md
+├── TEST_RESULTS.md
+├── THIRD_PARTY_NOTICES.md
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+├── vitest.config.ts
+└── WORKLOG.md

@@ -1,0 +1,14 @@
+{
+  "wifi": {
+    "availability": "",
+    "coverage": [],
+    "target_speed_mbps": null,
+    "primary_connection": "",
+    "backup_connections": []
+  },
+  "power": {
+    "primary_grid": "",
+    "backup": "",
+    "operational_notes": ""
+  }
+}

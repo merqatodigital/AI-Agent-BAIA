@@ -1,0 +1,26 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "wifi": {
+    "availability": "Free",
+    "coverage": [
+      "all rooms",
+      "beach lounge"
+    ],
+    "target_speed_mbps": 50,
+    "primary_connection": "Fiber routing where stable",
+    "operational_reality": "Connection drops are common across the local grid.",
+    "backup_connections": [
+      "Smart cellular hotspot",
+      "Globe cellular hotspot"
+    ],
+    "signal_note": "Smart and Globe alternate in signal priority along this section of Panindigan Beach."
+  },
+  "power": {
+    "primary_grid": "PALECO main grid",
+    "local_issue": "Frequent load shedding occurs across northern Palawan.",
+    "backup": "Local backup generation infrastructure",
+    "operational_notes": "Continuous uninterrupted daytime multi-unit air conditioning during a total grid failure is subject to generator load management."
+  }
+}
