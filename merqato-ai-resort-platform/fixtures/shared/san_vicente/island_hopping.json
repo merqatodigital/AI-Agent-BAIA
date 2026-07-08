@@ -1,0 +1,66 @@
+{
+  "source_status": "user_provided_regional_intelligence",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "pickup_context": "Because BAIA is beachfront, authorized skippers may pick up guests directly from the shore.",
+  "primary_zone": "Port Barton Bay Marine Park",
+  "character": [
+    "calm water",
+    "clear water",
+    "sea turtles",
+    "shallow coral reefs"
+  ],
+  "stops": [
+    {
+      "name": "Turtle Bay / Inaladelan Island",
+      "highlights": [
+        "sea turtle encounters",
+        "swimming"
+      ],
+      "wildlife_guarantee": false
+    },
+    {
+      "name": "German Island",
+      "highlights": [
+        "white sandbar",
+        "beach lunch",
+        "hammocks"
+      ]
+    },
+    {
+      "name": "Exotic Island",
+      "highlights": [
+        "shallow sandbar connection at low tide"
+      ]
+    },
+    {
+      "name": "Maxima Island",
+      "highlights": [
+        "shallow sandbar connection at low tide"
+      ]
+    },
+    {
+      "name": "Twin Reef",
+      "highlights": [
+        "shallow snorkeling",
+        "fan corals"
+      ]
+    },
+    {
+      "name": "Wide Reef",
+      "highlights": [
+        "shallow snorkeling",
+        "fan corals"
+      ]
+    }
+  ],
+  "live_check_fields": [
+    "weather",
+    "sea condition",
+    "tide",
+    "operator itinerary",
+    "pickup availability",
+    "price",
+    "departure time"
+  ]
+}

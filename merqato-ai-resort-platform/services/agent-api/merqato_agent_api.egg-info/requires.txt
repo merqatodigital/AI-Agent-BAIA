@@ -1,0 +1,17 @@
+crewai==1.15.1
+crewai-tools==1.15.1
+fastapi==0.139.0
+uvicorn[standard]==0.40.0
+pydantic==2.12.5
+pydantic-settings==2.10.1
+portalocker==2.7.0
+qdrant-client<2.0,>=1.12
+
+[:sys_platform == "win32"]
+pywin32==311
+
+[dev]
+pytest==8.3.5
+httpx==0.28.1
+ruff==0.13.2
+mypy==1.14.1

@@ -1,0 +1,32 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "tenant_slug": "baia_resort",
+  "business_name": "BAIA - Beachfront Boutique Lodge in San Vicente, Palawan",
+  "business_type": "resort",
+  "location": {
+    "country": "Philippines",
+    "province": "Palawan",
+    "municipality": "San Vicente",
+    "barangay": "San Vicente (Poblacion)",
+    "sitio": "Panindigan",
+    "postal_code": "5309",
+    "street_address": "Sitio Panindigan, Barangay San Vicente (Poblacion), San Vicente, Palawan, 5309, Philippines",
+    "setting": "Traditional fishing village directly on Penanindigan Beach",
+    "distance_to_town_center_km": {
+      "min": 4.0,
+      "max": 5.0
+    },
+    "distance_to_airport_km": 4.3,
+    "drive_time_to_airport_minutes": 10,
+    "nearest_airport_code": "SWL"
+  },
+  "contact": {
+    "primary_phone": "+63 917 276 2875",
+    "whatsapp": "+63 917 276 2875",
+    "viber": "+63 917 276 2875",
+    "secondary_phone": "+63 977 819 6554",
+    "email": "admin@diskubrepalawan.com"
+  }
+}

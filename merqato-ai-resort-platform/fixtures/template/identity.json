@@ -1,0 +1,27 @@
+{
+  "business_name": "",
+  "business_type": "",
+  "location": {
+    "country": "",
+    "province": "",
+    "municipality": "",
+    "barangay": "",
+    "sitio": "",
+    "postal_code": "",
+    "street_address": "",
+    "setting": "",
+    "distance_to_town_center_km": {
+      "min": null,
+      "max": null
+    },
+    "distance_to_airport_km": null,
+    "drive_time_to_airport_minutes": null
+  },
+  "contact": {
+    "primary_phone": "",
+    "whatsapp": "",
+    "viber": "",
+    "secondary_phone": "",
+    "email": ""
+  }
+}

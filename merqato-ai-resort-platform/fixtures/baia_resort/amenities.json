@@ -1,0 +1,36 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "property": [
+    "direct beachfront access",
+    "traditional fishing village setting",
+    "beach club",
+    "private or couples beach dining"
+  ],
+  "room": [
+    "air conditioning",
+    "flat-screen TV",
+    "private bathroom",
+    "hot water shower"
+  ],
+  "food_and_drink": [
+    "in-house restaurant",
+    "beach bar",
+    "Italian cuisine",
+    "Mediterranean cuisine",
+    "local cuisine"
+  ],
+  "transport": [
+    "private airport shuttle by request",
+    "authorized local outrigger boat pickup from the shoreline"
+  ],
+  "activities": [
+    "Port Barton boat tours",
+    "Turtle Bay trips",
+    "German Island trips",
+    "scooter rental",
+    "moped rental",
+    "bicycle rental"
+  ]
+}

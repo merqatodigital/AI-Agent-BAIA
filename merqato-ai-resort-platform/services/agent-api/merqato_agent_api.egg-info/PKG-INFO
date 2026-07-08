@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: merqato-agent-api
+Version: 0.1.0
+Summary: MerQato AI Resort Website — FastAPI agent service running real CrewAI agents.
+Requires-Python: <3.12,>=3.11
+Requires-Dist: crewai==1.15.1
+Requires-Dist: crewai-tools==1.15.1
+Requires-Dist: fastapi==0.139.0
+Requires-Dist: uvicorn[standard]==0.40.0
+Requires-Dist: pydantic==2.12.5
+Requires-Dist: pydantic-settings==2.10.1
+Requires-Dist: portalocker==2.7.0
+Requires-Dist: pywin32==311; sys_platform == "win32"
+Requires-Dist: qdrant-client<2.0,>=1.12
+Provides-Extra: dev
+Requires-Dist: pytest==8.3.5; extra == "dev"
+Requires-Dist: httpx==0.28.1; extra == "dev"
+Requires-Dist: ruff==0.13.2; extra == "dev"
+Requires-Dist: mypy==1.14.1; extra == "dev"

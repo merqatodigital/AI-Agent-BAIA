@@ -1,0 +1,30 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "currency": "PHP",
+  "nightly_rate_range": {
+    "min": 3500,
+    "max": 7000,
+    "max_is_open_ended": true
+  },
+  "usd_reference_range": {
+    "min": 39,
+    "max": 120,
+    "max_is_open_ended": true
+  },
+  "baseline_standard_double_occupancy_mid_season_php": 6210,
+  "rate_behavior": "Rates fluctuate by season and booking channel.",
+  "long_stay_rule": "Stays of 7 nights or more require a manual custom quote.",
+  "quote_channels": [
+    "Cloudbeds reservation system",
+    "Direct WhatsApp"
+  ],
+  "exact_quote_required_inputs": [
+    "check_in_date",
+    "check_out_date",
+    "number_of_guests",
+    "room_preference",
+    "airport_transfer_needed"
+  ]
+}

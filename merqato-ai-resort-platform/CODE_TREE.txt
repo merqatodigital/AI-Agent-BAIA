@@ -1,0 +1,176 @@
+merqato-ai-resort-platform/
+├── .dockerignore
+├── .gitignore
+├── .hermes/
+│   └── plan.md
+├── AGENTS.md
+├── BUILD_AND_RUN.md
+├── CLAUDE.md
+├── CODEBASE.md
+├── Dockerfile
+├── HERMES_AUDIT.md
+├── README.md
+├── ROADMAP.md
+├── THIRD_PARTY_NOTICES.md
+├── docker-compose.yml
+├── docs/
+│   ├── DEPLOYMENT.md
+│   └── KNOWLEDGE_ARCHITECTURE.md
+├── eslint.config.mjs
+├── fixtures/
+│   ├── baia_resort/
+│   │   ├── amenities.json
+│   │   ├── emergency_contacts.json
+│   │   ├── faq.json
+│   │   ├── food_breakfast.json
+│   │   ├── identity.json
+│   │   ├── policies.json
+│   │   ├── rates.json
+│   │   ├── rooms.json
+│   │   ├── transport.json
+│   │   └── wifi_power.json
+│   ├── shared/
+│   │   └── san_vicente/
+│   │       ├── alimanguan_surfing.json
+│   │       ├── island_hopping.json
+│   │       ├── long_beach.json
+│   │       ├── municipality_geography.json
+│   │       ├── overview.json
+│   │       ├── port_barton.json
+│   │       └── waterfalls_expanded.json
+│   └── template/
+│       ├── amenities.json
+│       ├── emergency_contacts.json
+│       ├── faq.json
+│       ├── food_breakfast.json
+│       ├── identity.json
+│       ├── policies.json
+│       ├── rates.json
+│       ├── rooms.json
+│       ├── transport.json
+│       └── wifi_power.json
+├── next.config.ts
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── postcss.config.mjs
+├── public/
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── services/
+│   └── agent-api/
+│       ├── Dockerfile
+│       ├── app/
+│       │   ├── __init__.py
+│       │   ├── agents/
+│       │   │   ├── __init__.py
+│       │   │   └── safety.py
+│       │   ├── api/
+│       │   │   ├── __init__.py
+│       │   │   └── routes.py
+│       │   ├── config.py
+│       │   ├── crews/
+│       │   │   ├── __init__.py
+│       │   │   └── concierge/
+│       │   │       ├── __init__.py
+│       │   │       ├── config/
+│       │   │       │   ├── agents.yaml
+│       │   │       │   └── tasks.yaml
+│       │   │       └── crew.py
+│       │   ├── knowledge/
+│       │   │   ├── __init__.py
+│       │   │   ├── chunker.py
+│       │   │   ├── embeddings.py
+│       │   │   ├── formatter.py
+│       │   │   ├── ingestion_service.py
+│       │   │   ├── models.py
+│       │   │   ├── qdrant_store.py
+│       │   │   ├── repository.py
+│       │   │   ├── sample_repository.py
+│       │   │   └── supabase_backend.py
+│       │   ├── main.py
+│       │   ├── models/
+│       │   │   ├── __init__.py
+│       │   │   └── schemas.py
+│       │   ├── scripts/
+│       │   │   ├── __init__.py
+│       │   │   └── seed_tenant.py
+│       │   ├── security/
+│       │   │   ├── __init__.py
+│       │   │   └── secrets.py
+│       │   └── services/
+│       │       ├── __init__.py
+│       │       ├── concierge_service.py
+│       │       ├── credentials.py
+│       │       ├── openrouter_validate.py
+│       │       └── tenant_resolver.py
+│       ├── pyproject.toml
+│       └── tests/
+│           ├── conftest.py
+│           ├── test_concierge.py
+│           ├── test_crewai.py
+│           ├── test_health.py
+│           ├── test_knowledge.py
+│           ├── test_openrouter_validate.py
+│           ├── test_sample_repository.py
+│           └── test_secrets.py
+├── src/
+│   ├── app/
+│   │   ├── admin/
+│   │   │   ├── approvals/
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout.tsx
+│   │   │   ├── openrouter/
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── resort/
+│   │   │       └── page.tsx
+│   │   ├── api/
+│   │   │   ├── agent/
+│   │   │   │   └── route.ts
+│   │   │   ├── inquiry/
+│   │   │   │   └── route.ts
+│   │   │   ├── mission-control/
+│   │   │   │   └── route.ts
+│   │   │   ├── openrouter/
+│   │   │   │   └── route.ts
+│   │   │   └── resort/
+│   │   │       └── route.ts
+│   │   ├── concierge/
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── admin/
+│   │   │   ├── OpenRouterSettings.tsx
+│   │   │   ├── ResortEditor.tsx
+│   │   │   └── StatCard.tsx
+│   │   ├── brand/
+│   │   │   └── Logo.tsx
+│   │   └── guest/
+│   │       ├── ConciergeChat.tsx
+│   │       ├── ConciergeWidget.tsx
+│   │       └── InquiryForm.tsx
+│   ├── lib/
+│   │   ├── brand.ts
+│   │   ├── concierge-ui.ts
+│   │   ├── config.ts
+│   │   ├── data/
+│   │   │   ├── dev-store.ts
+│   │   │   ├── index.ts
+│   │   │   ├── store.ts
+│   │   │   └── supabase-store.ts
+│   │   └── types.ts
+│   ├── middleware.test.ts
+│   └── middleware.ts
+├── supabase/
+│   ├── migrations/
+│   │   └── 0001_knowledge_ingestion_foundation.sql
+│   └── schema.sql
+├── tsconfig.json
+└── vitest.config.ts

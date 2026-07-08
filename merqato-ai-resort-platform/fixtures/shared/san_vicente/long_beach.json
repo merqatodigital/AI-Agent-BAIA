@@ -1,0 +1,15 @@
+{
+  "length_km": 14.7,
+  "barangays": [
+    "Poblacion",
+    "New Agutaya",
+    "San Isidro",
+    "Alimanguan"
+  ],
+  "requires_live_check_for": [
+    "access",
+    "weather",
+    "tide",
+    "transport"
+  ]
+}

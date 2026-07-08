@@ -1,0 +1,33 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "restaurant": {
+    "available": true,
+    "cuisines": [
+      "Italian",
+      "Mediterranean",
+      "Local"
+    ],
+    "features": [
+      "Italian-influenced kitchen profile",
+      "on-site beach club",
+      "private or couples beach dining"
+    ]
+  },
+  "breakfast": {
+    "hours": {
+      "start": "08:30",
+      "end": "10:30"
+    },
+    "formats": [
+      "Continental",
+      "Full English",
+      "Asian"
+    ],
+    "cooked_to_order": true,
+    "cost_php_per_adult": 400,
+    "cost_php_per_child": 400,
+    "included_rule": "Charge applies when breakfast is not explicitly bundled into the booked room rate."
+  }
+}

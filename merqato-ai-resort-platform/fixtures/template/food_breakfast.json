@@ -1,0 +1,17 @@
+{
+  "restaurant": {
+    "available": null,
+    "cuisines": [],
+    "features": []
+  },
+  "breakfast": {
+    "hours": {
+      "start": "",
+      "end": ""
+    },
+    "formats": [],
+    "cost_php_per_adult": null,
+    "cost_php_per_child": null,
+    "included_rule": ""
+  }
+}

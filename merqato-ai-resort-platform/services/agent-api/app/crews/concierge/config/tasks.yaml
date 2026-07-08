@@ -1,0 +1,24 @@
+# Concierge task definition (CrewAI 1.15.1 YAML config).
+concierge_task:
+  description: >-
+    Guest message: {guest_message}
+
+    Use your tenant_knowledge_search tool to retrieve the verified resort
+    knowledge, then answer helpfully and ONLY from what the tool returns.
+    If the answer is not in the retrieved knowledge, say so and do not
+    invent details.
+  expected_output: >-
+    A concise reply grounded only in the retrieved resort knowledge, plus the
+    guest intent and a confidence score between 0 and 1.
+  agent: concierge_agent
+  # Knowledge restrictions:
+  #   - Only the resort knowledge returned by tenant_knowledge_search may be used.
+  #   - External sources, the open internet, and prior training must NOT be
+  #     consulted to answer.
+  # Safety restrictions (enforced in app.agents.safety + concierge_service):
+  #   - Never confirm/cancel bookings, issue refunds, charge money, change
+  #     prices, publish content, delete records, send external messages, or
+  #     promise tours/transport/availability.
+  # Structured response contract (returned by the service, not the model):
+  #   reply, intent, confidence, sources, proposed_actions,
+  #   requires_approval, escalation_reason

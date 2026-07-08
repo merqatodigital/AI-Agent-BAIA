@@ -1,0 +1,41 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "airport_transfers": [
+    {
+      "type": "Private van airport transfer",
+      "capacity_passengers": 12,
+      "one_way_flat_rate_php": 6000,
+      "request_method": "Direct request to BAIA",
+      "advance_notice_hours": 48
+    }
+  ],
+  "pickup_requirements": [
+    "exact flight details",
+    "arrival airport",
+    "arrival date",
+    "arrival time",
+    "flight number",
+    "guest count",
+    "luggage count",
+    "contact number"
+  ],
+  "tour_partners": [
+    {
+      "type": "Authorized local outrigger captains",
+      "pickup_point": "Shoreline directly in front of BAIA",
+      "destinations": [
+        "Port Barton",
+        "Turtle Bay",
+        "German Island"
+      ]
+    }
+  ],
+  "rentals": [
+    "scooter",
+    "moped",
+    "bicycle"
+  ],
+  "rental_management": "Managed directly at the front desk"
+}

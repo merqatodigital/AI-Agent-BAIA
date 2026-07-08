@@ -1,0 +1,10 @@
+{
+  "currency": "PHP",
+  "nightly_rate_range": {
+    "min": null,
+    "max": null
+  },
+  "baseline_rate": null,
+  "long_stay_rule": "",
+  "quote_channel": []
+}
