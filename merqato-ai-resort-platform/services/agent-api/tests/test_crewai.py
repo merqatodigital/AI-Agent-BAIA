@@ -79,3 +79,19 @@ def test_kickoff_path_remains_intact(monkeypatch: pytest.MonkeyPatch):
     crew = ConciergeCrew(ctx, knowledge_tool=tool, embedder=FakeEmbeddingProvider())
     result = crew.kickoff({"guest_message": "hello"})
     assert "BAIA Resort" in result.raw
+
+
+def test_resolved_openrouter_key_reaches_the_llm(monkeypatch: pytest.MonkeyPatch):
+    # The per-resort resolved key must win over the environment-wide key.
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-env-wide-key-not-used")
+    ctx = make_tenant_context("44444444-4444-4444-4444-444444444444", "baia_resort", "active")
+    tool = TenantKnowledgeTool(
+        ctx, FakeEmbeddingProvider(), TenantQdrantStore(ctx.tenant_id, ctx.tenant_slug)
+    )
+    crew = ConciergeCrew(
+        ctx,
+        knowledge_tool=tool,
+        embedder=FakeEmbeddingProvider(),
+        openrouter_api_key="sk-or-resolved-resort-key",
+    ).build()
+    assert crew.agents[0].llm.api_key == "sk-or-resolved-resort-key"

@@ -90,11 +90,15 @@ class ConciergeCrew:
         llm: LLM | None = None,
         knowledge_tool: TenantKnowledgeTool | None = None,
         embedder: EmbeddingProvider | None = None,
+        openrouter_api_key: str | None = None,
     ) -> None:
         if not isinstance(ctx, TenantContext):
             raise TenantResolutionError("verified tenant context is required")
         self.ctx = ctx
         self.settings = get_settings()
+        # The resolved per-resort key (CredentialsProvider) wins over the
+        # environment-wide key; the key never appears in YAML or logs.
+        self._openrouter_api_key = openrouter_api_key or self.settings.openrouter_api_key
         # Fail closed: no fake embeddings in production. Tests inject a fake.
         self._embedder = embedder or get_embedding_provider()
         self._llm = llm or self._build_llm()
@@ -106,7 +110,7 @@ class ConciergeCrew:
         return LLM(
             model=self.settings.openrouter_model,
             provider="openrouter",
-            api_key=self.settings.openrouter_api_key,
+            api_key=self._openrouter_api_key,
             temperature=0.3,
         )
 

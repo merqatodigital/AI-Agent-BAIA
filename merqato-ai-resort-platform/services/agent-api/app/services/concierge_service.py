@@ -80,7 +80,12 @@ def run_concierge(req: ConciergeRequest) -> ConciergeResponse:
     store = TenantQdrantStore(ctx.tenant_id, ctx.tenant_slug)
     tool = TenantKnowledgeTool(ctx, embedder, store)
 
-    crew = ConciergeCrew(ctx, knowledge_tool=tool, embedder=embedder).build()
+    crew = ConciergeCrew(
+        ctx,
+        knowledge_tool=tool,
+        embedder=embedder,
+        openrouter_api_key=api_key,
+    ).build()
     safe_log(f"Concierge request tenant={ctx.tenant_slug} id={ctx.tenant_id}")
     # REAL CrewAI execution. Monkeypatchable in tests to avoid API credits.
     result = crew.kickoff(inputs={"guest_message": req.message})
