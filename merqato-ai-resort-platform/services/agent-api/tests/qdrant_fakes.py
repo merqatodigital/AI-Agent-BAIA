@@ -71,6 +71,15 @@ class FilterAwareVectorClient:
         for pid in doomed:
             del store[pid]
 
+    def create_payload_index(
+        self,
+        collection_name: str,  # noqa: ARG002
+        field_name: str,  # noqa: ARG002
+        schema_type: Any,  # noqa: ARG002
+    ) -> None:
+        # In-memory double: indexing is a no-op (filters evaluated directly).
+        return None
+
     def query_points(
         self,
         collection_name: str,

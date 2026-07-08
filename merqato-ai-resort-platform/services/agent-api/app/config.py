@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "openai/gpt-4o-mini"
 
+    # Ollama (local LLM + optional local embeddings). OpenAI-compatible /v1 API.
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen2.5:3b"
+
     # Supabase (multi-tenant source of truth; accessed via service-role key)
     supabase_url: str = ""
     supabase_service_role_key: str = ""
@@ -37,8 +41,10 @@ class Settings(BaseSettings):
     qdrant_api_key: str = ""
 
     # Knowledge embeddings
-    knowledge_embedding_provider: str = "openai"  # openai | none
-    knowledge_embedding_model: str = "text-embedding-3-small"
+    # Provider options: "openai" (needs OPENAI_API_KEY) | "fastembed" (local,
+    # no key) | "none". Production fails closed unless a real provider is set.
+    knowledge_embedding_provider: str = "fastembed"
+    knowledge_embedding_model: str = "BAAI/bge-small-en-v1.5"
     # Required only when the OpenAI embedding provider is configured.
     openai_api_key: str = ""
 
@@ -55,7 +61,8 @@ class Settings(BaseSettings):
     def embedding_dimension(self) -> int:
         """Vector size must be explicit per provider/model — never guessed.
 
-        text-embedding-3-small produces 1536-dim vectors.
+        text-embedding-3-small -> 1536, text-embedding-3-large -> 3072,
+        text-embedding-ada-002 -> 1536. BAAI/bge-small-en-v1.5 (fastembed) -> 384.
         """
         if self.knowledge_embedding_provider == "openai":
             if self.knowledge_embedding_model == "text-embedding-3-small":
@@ -64,6 +71,9 @@ class Settings(BaseSettings):
                 return 3072
             if self.knowledge_embedding_model == "text-embedding-ada-002":
                 return 1536
+        if self.knowledge_embedding_provider == "fastembed":
+            # BAAI/bge-small-en-v1.5 produces 384-dim vectors.
+            return 384
         return 0
 
 

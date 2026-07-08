@@ -67,6 +67,44 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         return [item.embedding for item in resp.data]
 
 
+class FastEmbedProvider(EmbeddingProvider):
+    """Local, key-free embeddings via fastembed (BAAI/bge-small-en-v1.5).
+
+    Runs entirely on this host — no external API, no secret. Suitable for
+    production when an external embedding provider (OpenAI) is unavailable.
+    The model is loaded lazily so import/unit tests stay cheap.
+    """
+
+    _DEFAULT_MODEL = "BAAI/bge-small-en-v1.5"
+    _DEFAULT_DIM = 384
+
+    def __init__(self, model: str | None = None, dimension: int | None = None) -> None:
+        self._model_name = model or self._DEFAULT_MODEL
+        self._dim = dimension or self._DEFAULT_DIM
+        self._model: Any = None
+
+    @property
+    def model(self) -> str:
+        return self._model_name
+
+    @property
+    def dimension(self) -> int:
+        return self._dim
+
+    def _get_model(self) -> Any:
+        if self._model is None:
+            try:  # pragma: no cover - needs the optional fastembed dep
+                from fastembed import TextEmbedding
+
+                self._model = TextEmbedding(model_name=self._model_name)
+            except Exception as exc:  # pragma: no cover
+                raise RuntimeError(f"fastembed unavailable: {exc}") from exc
+        return self._model
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return [list(vec) for vec in self._get_model().embed(texts)]
+
+
 class FakeEmbeddingProvider(EmbeddingProvider):
     """Deterministic test double. Hashes text into a stable fixed-dim vector.
 
@@ -110,6 +148,12 @@ def get_embedding_provider() -> EmbeddingProvider:
                 "embedding provider 'openai' selected but OPENAI_API_KEY is not set"
             )
         return OpenAIEmbeddingProvider()
+    if settings.knowledge_embedding_provider == "fastembed":
+        # Local, key-free. Requires the optional 'fastembed' dependency.
+        return FastEmbedProvider(
+            model=settings.knowledge_embedding_model or None,
+            dimension=settings.embedding_dimension or None,
+        )
     raise EmbeddingNotConfigured(
         f"unsupported embedding provider: {settings.knowledge_embedding_provider!r}"
     )
