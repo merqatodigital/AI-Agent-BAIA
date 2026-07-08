@@ -22,7 +22,7 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 - [x] 2.5 Audit records for every state change (create_draft, verify_version, publish_version, publish_failed, unpublish_version, archive_version, ingest_version)
 - [x] 2.6 Publication metadata in Qdrant payload; index only on publish; remove on unpublish; rollback published_at on indexing failure
 - [x] 2.7 Qdrant search filters: tenant + verified + published + guest_visible + !internal_only
-- [ ] 2.V Validation: full backend + frontend checks
+- [x] 2.V Validation: ruff clean, mypy clean, pytest 84 passed; tsc clean, ESLint clean, Vitest 6 passed, next build OK
 
 ## Milestone 3 — Admin workflow
 
