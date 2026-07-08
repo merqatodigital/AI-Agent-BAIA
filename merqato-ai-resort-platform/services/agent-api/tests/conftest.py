@@ -85,3 +85,7 @@ def mock_kickoff_with(monkeypatch):
 @pytest.fixture
 def set_openrouter_key(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "«redacted:sk-…»")
+    # Embedding provider construction is validated fail-closed in production;
+    # tests satisfy it with a dummy key (no network call is ever made because
+    # Crew.kickoff is mocked).
+    monkeypatch.setenv("OPENAI_API_KEY", "test-embedding-key")

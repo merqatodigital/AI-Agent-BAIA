@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from app.knowledge.embeddings import EmbeddingNotConfigured
 from app.models.schemas import (
     ConciergeRequest,
     ConciergeResponse,
@@ -23,6 +24,9 @@ def concierge_message(req: ConciergeRequest) -> ConciergeResponse:
         return run_concierge(req)
     except OpenRouterNotConfigured as exc:
         # Controlled, clear error. No secrets, no fabricated answer.
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except EmbeddingNotConfigured as exc:
+        # Fail closed: no fake embeddings, no fabricated retrieval.
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 

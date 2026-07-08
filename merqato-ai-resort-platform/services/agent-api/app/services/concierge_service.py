@@ -5,7 +5,7 @@ import re
 from app.agents.safety import detect_escalation, detect_forbidden
 from app.crews.concierge import ConciergeCrew
 from app.crews.concierge.crew import TenantKnowledgeTool
-from app.knowledge.embeddings import FakeEmbeddingProvider
+from app.knowledge.embeddings import get_embedding_provider
 from app.knowledge.qdrant_store import TenantQdrantStore
 from app.knowledge.repository import KnowledgeRepository
 from app.models.schemas import ConciergeRequest, ConciergeResponse
@@ -75,7 +75,8 @@ def run_concierge(req: ConciergeRequest) -> ConciergeResponse:
     # Verified tenant context is REQUIRED before any knowledge retrieval.
     ctx = _resolve_tenant(req.resort_id)
 
-    embedder = FakeEmbeddingProvider()
+    # Real embedding provider only; raises EmbeddingNotConfigured (fail closed).
+    embedder = get_embedding_provider()
     store = TenantQdrantStore(ctx.tenant_id, ctx.tenant_slug)
     tool = TenantKnowledgeTool(ctx, embedder, store)
 

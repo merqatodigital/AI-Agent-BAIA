@@ -6,6 +6,14 @@ from typing import Any
 from app.config import get_settings
 
 
+class EmbeddingNotConfigured(RuntimeError):
+    """Raised when no usable production embedding provider is configured.
+
+    Production code must fail closed instead of silently substituting a fake
+    provider.
+    """
+
+
 class EmbeddingProvider(ABC):
     """Typed embedding abstraction. No dependency on CrewAI execution."""
 
@@ -90,11 +98,18 @@ class FakeEmbeddingProvider(EmbeddingProvider):
 
 
 def get_embedding_provider() -> EmbeddingProvider:
-    """Factory: returns the configured provider. Defaults to OpenAI if the
-    embedding provider setting is 'openai'."""
+    """Factory: returns the configured production provider, failing closed.
+
+    Raises :class:`EmbeddingNotConfigured` when the provider selection or its
+    credentials are missing. Never returns :class:`FakeEmbeddingProvider`.
+    """
     settings = get_settings()
     if settings.knowledge_embedding_provider == "openai":
+        if not settings.openai_api_key:
+            raise EmbeddingNotConfigured(
+                "embedding provider 'openai' selected but OPENAI_API_KEY is not set"
+            )
         return OpenAIEmbeddingProvider()
-    raise RuntimeError(
+    raise EmbeddingNotConfigured(
         f"unsupported embedding provider: {settings.knowledge_embedding_provider!r}"
     )

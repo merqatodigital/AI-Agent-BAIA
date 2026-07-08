@@ -13,7 +13,7 @@ from crewai.tools import BaseTool
 from pydantic import ConfigDict
 
 from app.config import get_settings
-from app.knowledge.embeddings import EmbeddingProvider, FakeEmbeddingProvider
+from app.knowledge.embeddings import EmbeddingProvider, get_embedding_provider
 from app.knowledge.qdrant_store import TenantQdrantStore
 from app.services.tenant_resolver import TenantContext, TenantResolutionError
 
@@ -95,7 +95,8 @@ class ConciergeCrew:
             raise TenantResolutionError("verified tenant context is required")
         self.ctx = ctx
         self.settings = get_settings()
-        self._embedder = embedder or FakeEmbeddingProvider()
+        # Fail closed: no fake embeddings in production. Tests inject a fake.
+        self._embedder = embedder or get_embedding_provider()
         self._llm = llm or self._build_llm()
         self._knowledge_tool = knowledge_tool or TenantKnowledgeTool(
             ctx, self._embedder
