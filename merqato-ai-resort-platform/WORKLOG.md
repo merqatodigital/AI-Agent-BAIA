@@ -30,13 +30,13 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 - [x] 3.2 Next.js BFF routes proxying the FastAPI knowledge routes (admin-protected, allowlisted subpaths, ADMIN_API_TOKEN server-side only)
 - [x] 3.3 `/admin/knowledge` page (category list + status)
 - [x] 3.4 `/admin/knowledge/[category]` page (view/edit draft, verify, publish, unpublish, history, audits, ingestion status)
-- [ ] 3.V Validation: full backend + frontend checks
+- [x] 3.V Validation: ruff clean, mypy clean, pytest 91 passed; tsc clean, ESLint clean, Vitest 7 passed, next build OK
 
 ## Milestone 4 — End-to-end proof
 
-- [ ] 4.1 E2E test: admin edit → immutable draft → verify → publish → Supabase publication → Qdrant indexing → audit record → guest question → published knowledge retrieval → grounded CrewAI answer
-- [ ] 4.2 Negative proofs: no draft leakage, no internal-content leakage, no cross-tenant retrieval, safe failure without credentials
-- [ ] 4.V Validation: full backend + frontend checks
+- [x] 4.1 E2E test (test tenant, live BAIA untouched): admin edit → immutable draft → verify → publish → Supabase publication → Qdrant indexing → audit record → guest question → published knowledge retrieval → grounded CrewAI answer (tests/test_e2e_proof.py)
+- [x] 4.2 Negative proofs: no draft leakage, no internal-content leakage (publish rejected), no cross-tenant retrieval, safe 503s when ADMIN_API_TOKEN / OPENROUTER_API_KEY / OPENAI_API_KEY are missing
+- [x] 4.V Validation: ruff clean, mypy clean, pytest 95 passed; tsc clean, ESLint clean, Vitest 7 passed, next build OK
 
 ## Final
 
