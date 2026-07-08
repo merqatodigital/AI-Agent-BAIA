@@ -1,12 +1,25 @@
 from __future__ import annotations
 
-import pytest
-from crewai import Crew
-from fastapi.testclient import TestClient
+import os
 
-from app.config import DEFAULT_TENANT_SLUG, get_settings
-from app.knowledge.repository import KnowledgeRepository, reset_default_backend
-from app.main import app
+import pytest
+
+# Keep the unit suite offline and fast: CrewAI Flow kickoff otherwise tries to
+# export telemetry spans over the network.
+os.environ.setdefault("CREWAI_DISABLE_TELEMETRY", "true")
+os.environ.setdefault("OTEL_SDK_DISABLED", "true")
+
+# These imports must follow the telemetry env setup above (crewai reads the
+# environment at import time), hence the E402 suppressions.
+from crewai import Crew  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app.config import DEFAULT_TENANT_SLUG, get_settings  # noqa: E402
+from app.knowledge.repository import (  # noqa: E402
+    KnowledgeRepository,
+    reset_default_backend,
+)
+from app.main import app  # noqa: E402
 
 
 class _FakeCrewOutput:

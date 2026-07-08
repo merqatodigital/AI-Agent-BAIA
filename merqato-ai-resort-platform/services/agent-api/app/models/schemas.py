@@ -18,6 +18,9 @@ class ConciergeResponse(BaseModel):
     proposed_actions: list[str] = Field(default_factory=list)
     requires_approval: bool = False
     escalation_reason: str | None = None
+    # Echoed from the request untouched so the caller keeps its thread
+    # identity. No server-side conversation memory is attached to it.
+    conversation_id: str = ""
 
 
 class HealthResponse(BaseModel):

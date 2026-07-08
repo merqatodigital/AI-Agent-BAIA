@@ -8,9 +8,9 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 - [x] 1.2 Standardize the tenant slug to `baia-resort` (shared constant, frontend + BFF + backend + tests)
 - [x] 1.3 Replace production fake embeddings with the existing real provider (fail closed when unconfigured)
 - [x] 1.4 Pass the resolved OpenRouter key into the existing CrewAI LLM
-- [ ] 1.5 Add a CrewAI Flow around the existing `ConciergeCrew`; FastAPI calls the Flow
+- [x] 1.5 Add a CrewAI Flow around the existing `ConciergeCrew`; FastAPI calls the Flow
 - [ ] 1.6 Handle draft, inactive and unknown tenants with safe responses at the route
-- [ ] 1.7 Preserve `conversation_id` through the flow without fake memory
+- [x] 1.7 Preserve `conversation_id` through the flow without fake memory (echoed in ConciergeResponse, no memory attached)
 - [ ] 1.V Validation: ruff + mypy + pytest, typecheck + ESLint + Vitest + build
 
 ## Milestone 2 — Safe knowledge publishing
