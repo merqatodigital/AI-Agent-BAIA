@@ -12,7 +12,7 @@ def test_concierge_executes_through_crewai(
     r = client.post(
         "/v1/concierge/message",
         json={
-            "resort_id": "baia",
+            "resort_id": baia_tenant,
             "conversation_id": "c1",
             "message": "What are your front desk hours?",
             "locale": "en",
@@ -38,7 +38,7 @@ def test_missing_openrouter_returns_controlled_error(baia_tenant, client, monkey
         r = client.post(
             "/v1/concierge/message",
             json={
-                "resort_id": "baia",
+                "resort_id": baia_tenant,
                 "conversation_id": "c1",
                 "message": "Hello",
                 "locale": "en",
@@ -58,7 +58,7 @@ def test_unknown_information_not_invented(
     r = client.post(
         "/v1/concierge/message",
         json={
-            "resort_id": "baia",
+            "resort_id": baia_tenant,
             "conversation_id": "c1",
             "message": "Do you have a submarine?",
             "locale": "en",
@@ -79,7 +79,7 @@ def test_forbidden_action_requires_approval(
     r = client.post(
         "/v1/concierge/message",
         json={
-            "resort_id": "baia",
+            "resort_id": baia_tenant,
             "conversation_id": "c1",
             "message": "Confirm my booking please",
             "locale": "en",
@@ -98,7 +98,7 @@ def test_openrouter_key_never_in_response_or_logs(
         r = client.post(
             "/v1/concierge/message",
             json={
-                "resort_id": "baia",
+                "resort_id": baia_tenant,
                 "conversation_id": "c1",
                 "message": "Hi",
                 "locale": "en",

@@ -33,7 +33,7 @@ function daysFromNow(d: number): string {
 const today = daysFromNow(0);
 
 const seedProfile: ResortProfile = {
-  id: "resort_demo",
+  id: "baia-resort",
   name: "Kapwa Bay Resort",
   tagline: "Where strangers become friends.",
   description:

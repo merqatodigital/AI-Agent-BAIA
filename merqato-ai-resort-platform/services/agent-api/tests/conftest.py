@@ -4,7 +4,7 @@ import pytest
 from crewai import Crew
 from fastapi.testclient import TestClient
 
-from app.config import get_settings
+from app.config import DEFAULT_TENANT_SLUG, get_settings
 from app.knowledge.repository import KnowledgeRepository, reset_default_backend
 from app.main import app
 
@@ -38,15 +38,15 @@ def client():
 
 @pytest.fixture
 def baia_tenant():
-    """Seed an ACTIVE `baia` tenant so the concierge service can resolve it."""
+    """Seed an ACTIVE canonical tenant so the concierge service can resolve it."""
     repo = KnowledgeRepository()
     repo.upsert_tenant(
-        slug="baia",
+        slug=DEFAULT_TENANT_SLUG,
         business_name="BAIA Resort",
         business_type="resort",
         status="active",
     )
-    yield "baia"
+    yield DEFAULT_TENANT_SLUG
 
 
 @pytest.fixture

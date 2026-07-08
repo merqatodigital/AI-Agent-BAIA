@@ -4,6 +4,11 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Canonical tenant slug for the BAIA resort. The same value is used by the
+# Next.js BFF (src/lib/config.ts), Supabase seeds, and Qdrant collection
+# naming. Keep in sync — never scatter tenant-slug literals.
+DEFAULT_TENANT_SLUG = "baia-resort"
+
 
 class Settings(BaseSettings):
     """Server configuration. Loaded from environment / .env only.

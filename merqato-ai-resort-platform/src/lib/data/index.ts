@@ -1,4 +1,4 @@
-import { isSupabaseConfigured } from "../config";
+import { DEFAULT_TENANT_SLUG, isSupabaseConfigured } from "../config";
 import type { DataStore } from "./store";
 import { DevDataStore } from "./dev-store";
 import { createSupabaseStore } from "./supabase-store";
@@ -19,4 +19,4 @@ export function getDataStore(): DataStore {
   return cached;
 }
 
-export const DEFAULT_RESORT_ID = "resort_demo";
+export const DEFAULT_RESORT_ID = DEFAULT_TENANT_SLUG;

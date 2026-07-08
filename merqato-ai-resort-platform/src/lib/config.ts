@@ -4,6 +4,13 @@
  * server components) and are never shipped to the browser.
  */
 
+/**
+ * Canonical tenant slug for the BAIA resort. The same value is used by the
+ * FastAPI agent service (app/config.py DEFAULT_TENANT_SLUG), Supabase seeds
+ * and Qdrant collection naming. Keep in sync — never scatter slug literals.
+ */
+export const DEFAULT_TENANT_SLUG = "baia-resort";
+
 export const clientEnv = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",

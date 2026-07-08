@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DEFAULT_TENANT_SLUG } from "@/lib/config";
 
 /**
  * BFF proxy to the FastAPI agent service (services/agent-api).
@@ -17,7 +18,7 @@ const AGENT_API_URL = process.env.AGENT_API_URL ?? "http://localhost:8000";
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const message = body?.message as string | undefined;
-  const resortId = (body?.resortId as string | undefined) ?? "baia";
+  const resortId = (body?.resortId as string | undefined) ?? DEFAULT_TENANT_SLUG;
   const locale = (body?.locale as string | undefined) ?? "en";
   const conversationId =
     (body?.conversationId as string | undefined) ?? crypto.randomUUID();
