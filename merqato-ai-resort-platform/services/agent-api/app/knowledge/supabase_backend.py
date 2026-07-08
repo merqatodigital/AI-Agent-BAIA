@@ -12,12 +12,26 @@ All writes are additive/upsert and never mutate existing version history in plac
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
 
 from app.knowledge.repository import KnowledgeBackend
 from app.security.secrets import redact
+
+
+def _utc_now_iso() -> str:
+    """Explicit ISO-8601 UTC timestamp for REST payloads.
+
+    PostgREST treats values literally — the string "now()" is NOT evaluated
+    as SQL, so timestamps must be generated here.
+    """
+    return datetime.now(UTC).isoformat()
+
+
+class VersionConflictError(RuntimeError):
+    """Raised when concurrent edits exhaust the version-number retry budget."""
 
 # Tables (public schema).
 _TENANTS = "tenants"
@@ -133,12 +147,14 @@ class SupabaseBackend(KnowledgeBackend):
         return rows[0] if rows else None
 
     def upsert_document(self, **kwargs: Any) -> dict[str, Any]:
+        # current_version is intentionally NOT in the payload: on insert the
+        # DB default (0) applies, and on conflict-merge the existing value is
+        # preserved instead of being reset to 0.
         row = {
             "tenant_id": kwargs["tenant_id"],
             "category": kwargs["category"],
             "source_type": kwargs["source_type"],
             "source_filename": kwargs.get("source_filename"),
-            "current_version": 0,
         }
         return self._post(_DOCS, row, on_conflict="tenant_id,category")
 
@@ -154,10 +170,10 @@ class SupabaseBackend(KnowledgeBackend):
         )
         return bool(rows)
 
-    def insert_version(self, **kwargs: Any) -> dict[str, Any]:
-        document_id = kwargs["document_id"]
-        tenant_id = kwargs["tenant_id"]
-        # Determine the next version number (immutable history: max+1).
+    # Bounded retries for the read-max-plus-one race under concurrent edits.
+    _VERSION_RETRIES = 5
+
+    def _next_version(self, document_id: str) -> int:
         existing = self._get(
             _VERSIONS,
             {
@@ -167,18 +183,42 @@ class SupabaseBackend(KnowledgeBackend):
                 "limit": "1",
             },
         )
-        next_version = (existing[0]["version"] + 1) if existing else 1
-        row = {
-            "document_id": document_id,
-            "tenant_id": tenant_id,
-            "version": next_version,
-            "content": kwargs["content"],
-            "checksum": kwargs["checksum"],
-            "verification_status": kwargs["verification_status"],
-            "guest_visible": kwargs.get("guest_visible", True),
-            "internal_only": kwargs.get("internal_only", False),
-        }
-        return self._post(_VERSIONS, row)
+        return (existing[0]["version"] + 1) if existing else 1
+
+    def insert_version(self, **kwargs: Any) -> dict[str, Any]:
+        """Insert an immutable new version row (never merge/overwrite).
+
+        Version numbering is read-max-plus-one guarded by the DB's
+        unique(document_id, version) constraint: a concurrent insert makes the
+        plain POST fail with a conflict, and we retry with a fresh number.
+        History is never overwritten — there is no on_conflict merge here.
+        """
+        document_id = kwargs["document_id"]
+        tenant_id = kwargs["tenant_id"]
+        last_error: Exception | None = None
+        for _attempt in range(self._VERSION_RETRIES):
+            row = {
+                "document_id": document_id,
+                "tenant_id": tenant_id,
+                "version": self._next_version(document_id),
+                "content": kwargs["content"],
+                "checksum": kwargs["checksum"],
+                "verification_status": kwargs["verification_status"],
+                "guest_visible": kwargs.get("guest_visible", True),
+                "internal_only": kwargs.get("internal_only", False),
+            }
+            try:
+                return self._post(_VERSIONS, row)
+            except RuntimeError as exc:
+                # Unique-violation (409) from a concurrent writer: re-read and
+                # retry. Any other error propagates unchanged.
+                if "409" not in str(exc) and "duplicate" not in str(exc).lower():
+                    raise
+                last_error = exc
+        raise VersionConflictError(
+            f"could not allocate a version for document {document_id} after "
+            f"{self._VERSION_RETRIES} attempts"
+        ) from last_error
 
     def update_document_version(self, document_id: str, version: int) -> None:
         self._patch(
@@ -194,6 +234,9 @@ class SupabaseBackend(KnowledgeBackend):
             "status": kwargs.get("status", "pending"),
             "collection_name": kwargs.get("collection_name"),
             "checksum": kwargs.get("checksum"),
+            # Link the job to the exact immutable version it ingests.
+            "document_version_id": kwargs.get("document_version_id"),
+            "started_at": _utc_now_iso(),
         }
         return self._post(_JOBS, row)
 
@@ -206,7 +249,7 @@ class SupabaseBackend(KnowledgeBackend):
         if kwargs.get("error_message") is not None:
             values["error_message"] = kwargs["error_message"]
         if kwargs.get("completed"):
-            values["completed_at"] = "now()"
+            values["completed_at"] = _utc_now_iso()
         if values:
             self._patch(_JOBS, {"id": f"eq.{job_id}"}, values)
 

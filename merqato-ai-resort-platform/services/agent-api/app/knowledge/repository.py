@@ -112,6 +112,7 @@ class KnowledgeRepository:
         status: str = IngestionStatus.PENDING.value,
         collection_name: str | None = None,
         checksum: str | None = None,
+        document_version_id: str | None = None,
     ) -> dict[str, Any]:
         return self._backend.insert_job(
             tenant_id=tenant_id,
@@ -119,6 +120,7 @@ class KnowledgeRepository:
             status=status,
             collection_name=collection_name,
             checksum=checksum,
+            document_version_id=document_version_id,
         )
 
     def update_job(
@@ -270,9 +272,11 @@ class _InMemoryBackend(KnowledgeBackend):
         )
 
     def insert_version(self, **kwargs: Any) -> dict[str, Any]:
-        # Determine next version number for this document.
-        doc_versions = [v for v in self.versions if v["document_id"] == kwargs["document_id"]]
-        version = len(doc_versions) + 1
+        # Determine next version number for this document (max+1, immutable).
+        numbers = [
+            v["version"] for v in self.versions if v["document_id"] == kwargs["document_id"]
+        ]
+        version = (max(numbers) + 1) if numbers else 1
         row = {
             "id": new_uuid(),
             "document_id": kwargs["document_id"],

@@ -121,13 +121,14 @@ class IngestionService:
             guest_visible=guest_visible,
             internal_only=internal_only,
         )
-        # 8. record ingestion job
+        # 8. record ingestion job, linked to the exact immutable version
         job = self._repo.create_job(
             tenant_id=ctx.tenant_id,
             source=source_filename or category,
             status=IngestionStatus.RUNNING.value,
             collection_name=ctx.qdrant_collection,
             checksum=checksum,
+            document_version_id=version["id"],
         )
 
         indexable = (
