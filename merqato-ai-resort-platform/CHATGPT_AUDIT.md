@@ -1,3 +1,28 @@
+# Implementation status addendum (post-audit fixes)
+
+**Branch:** `claude/merqato-platform-completion-d6p01m` · **Date:** 2026-07-08
+**Verification:** ruff clean · mypy clean · pytest 95 passed · tsc clean ·
+ESLint clean · Vitest 7 passed · `next build` OK
+
+Every critical finding below has been implemented. The original audit text is
+preserved unchanged underneath for the record.
+
+| Finding | Status | Implementation |
+| --- | --- | --- |
+| Critical 1 — Supabase not the runtime backend | **Fixed** | `_default_backend()` selects `SupabaseBackend` whenever `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set; in-memory backend is tests/zero-config only (`test_backend_selection.py`). |
+| Critical 2 — No CrewAI Flow | **Fixed** | `app/crews/concierge/flow.py` adds `ConciergeFlow` (credentials gate → tenant resolution → existing `ConciergeCrew` → safety validation). FastAPI calls the Flow; the Crew was reused, not replaced; no extra agents added (`test_flow.py`). |
+| Critical 3 — Production fake embeddings | **Fixed** | `run_concierge`/`ConciergeCrew` resolve `get_embedding_provider()`; missing config raises `EmbeddingNotConfigured` → controlled 503. `FakeEmbeddingProvider` is test-only (`test_embeddings_fail_closed.py`). |
+| Critical 4 — Incomplete publish semantics | **Fixed** | `PublishingService.publish` sets `published_at` in Supabase first, indexes to Qdrant with publication metadata, and rolls the publication back if indexing fails — the stores never disagree silently (`test_publishing.py`). |
+| Critical 5 — Qdrant search lacked publication filtering | **Fixed** | Payload now carries `published` + `published_at`; `TenantQdrantStore.search` filters tenant + `verification_status=verified` + `published=true` + `guest_visible=true` + `internal_only=false`. |
+| Critical 6 — Draft/unknown tenants crashed the route | **Fixed** | `TenantNotResolvable` maps to a controlled 503 with a guest-safe reply that leaks no lifecycle detail (`test_tenant_gating.py`). |
+| Critical 7 — No admin knowledge management | **Fixed** | FastAPI `/v1/admin/tenants/{slug}/knowledge/*` (categories, current, versions, audits, jobs, draft, verify, publish, unpublish/archive) via the repository layer; protected Next.js BFF proxy `/api/admin/knowledge/*`; `/admin/knowledge` + `/admin/knowledge/[category]` pages reusing the existing UI. |
+| Critical 8 — Inconsistent tenant slug | **Fixed** | Canonical `baia-resort` via `DEFAULT_TENANT_SLUG` in `app/config.py` and `src/lib/config.ts`; frontend, BFF, backend and tests all share it. |
+| Critical 9 — BAIA public landing page not migrated | **Deferred (as the audit prescribed)** | Site migration is an explicitly separate phase after re-audit; not attempted here. |
+| Critical 10 — OpenRouter credential abstraction partial | **Fixed** | The `CredentialsProvider`-resolved key is passed into `ConciergeCrew(openrouter_api_key=…)` and used by `_build_llm()`. Per-tenant key storage remains future work; the env-wide provider is the documented first implementation. |
+| SupabaseBackend high-risk notes | **Fixed** | Document upsert no longer resets `current_version`; version numbering retries under the DB unique constraint (bounded, loud failure); jobs link `document_version_id`; timestamps are real ISO strings, not the literal `"now()"` (`test_supabase_backend.py`). |
+| Repository/interface gaps | **Fixed** | Repository now exposes verify/publish/unpublish state updates, version history, current version, jobs and audits; routes never bypass it. |
+| End-to-end proof | **Added** | `test_e2e_proof.py` proves admin edit → immutable draft → verify → publish → Supabase publication → Qdrant indexing → audit records → guest question → published-knowledge retrieval → grounded CrewAI answer, plus no draft leakage, no internal-content leakage, no cross-tenant retrieval, and safe failure without credentials. Live BAIA was never activated, published or indexed. |
+
 ---
 
 # ChatGPT Independent Full Code Audit

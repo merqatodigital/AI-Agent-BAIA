@@ -40,9 +40,9 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 
 ## Final
 
-- [ ] F.1 Update README.md, CODE_TREE.txt, TEST_RESULTS.md, BUILD_AND_RUN.md, audit (implemented fixes)
-- [ ] F.2 Secret scan
-- [ ] F.3 Push branch
+- [x] F.1 Update README.md (repo + platform), CODE_TREE.txt, TEST_RESULTS.md, BUILD_AND_RUN.md, CHATGPT_AUDIT.md (implementation-status addendum)
+- [x] F.2 Secret scan — pattern scan over the tree found only synthetic secret-shaped strings in redaction/validation tests; no `.env` or key files tracked
+- [x] F.3 Push branch `claude/merqato-platform-completion-d6p01m`
 
 ## Log
 

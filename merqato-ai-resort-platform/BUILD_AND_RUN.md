@@ -49,9 +49,18 @@ QDRANT_API_KEY
 KNOWLEDGE_EMBEDDING_PROVIDER   # openai | none
 KNOWLEDGE_EMBEDDING_MODEL      # text-embedding-3-small
 OPENAI_API_KEY                 # required only when embedding provider = openai
+ADMIN_API_TOKEN                # shared secret for the admin knowledge API
+                               # (X-Admin-Token); admin routes are DISABLED
+                               # (503) until this is set
 TENANT_SLUG
 TENANT_DOMAIN
 ```
+
+Runtime backend selection: when `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
+are set, the FastAPI service reads/writes live Supabase (service role).
+Without them it falls back to an in-memory backend (tests / zero-config demo).
+The canonical tenant slug is `baia-resort` (`DEFAULT_TENANT_SLUG` in
+`app/config.py` and `src/lib/config.ts`).
 
 ## 2. Frontend (Next.js 16 App Router)
 
@@ -77,9 +86,12 @@ OPENROUTER_API_KEY            # server-only
 OPENROUTER_BASE_URL
 OPENROUTER_MODEL
 AGENT_API_URL                 # BFF -> FastAPI target, default http://localhost:8000
+ADMIN_API_TOKEN               # server-only; forwarded as X-Admin-Token by the
+                              # /api/admin/knowledge BFF proxy (never sent to
+                              # the browser)
 NEXT_PUBLIC_APP_URL
-TEMP_ADMIN_USERNAME           # placeholder only — auth not implemented
-TEMP_ADMIN_PASSWORD           # placeholder only — auth not implemented
+TEMP_ADMIN_USERNAME           # interim Basic Auth for /admin + /api/admin
+TEMP_ADMIN_PASSWORD           # interim Basic Auth for /admin + /api/admin
 ```
 
 ## 3. Tests
@@ -108,14 +120,31 @@ pnpm run build
 - Frontend: `pnpm build` produces a standalone Next.js output
   (`next.config.ts` sets `output: "standalone"`).
 
-## 5. Knowledge seeding (CLI only, in this commit)
+## 5. Knowledge management
 
+### Admin UI (recommended)
+With both services running and `ADMIN_API_TOKEN` set on BOTH sides:
+- `/admin/knowledge` — the 10 categories with draft/verified/published state
+- `/admin/knowledge/<category>` — JSON draft editor (every save creates a NEW
+  immutable version), verify / publish / unpublish actions, version history,
+  ingestion status, audit history
+
+The publish flow is: draft → verify → publish. Publishing sets
+`published_at` in Supabase, indexes the content into the tenant's Qdrant
+collection with publication metadata, and rolls back if indexing fails.
+Guest retrieval only ever sees verified + published + guest-visible +
+non-internal content.
+
+### CLI seeding (fixtures)
 ```bash
 cd services/agent-api
-PYTHONPATH=. python -m app.scripts.seed_tenant <tenant_slug> \
-    --status draft --publish false
-# publishes (indexes to Qdrant) only after verify + --publish true
+python -m app.scripts.seed_tenant \
+    --tenant-slug baia-resort --business-name "BAIA Resort" \
+    --business-type resort --fixtures-path ../../fixtures/baia_resort \
+    --status draft --dry-run
+# drop --dry-run to write; add --verification-status verified --publish
+# ONLY after human verification and explicit approval
 ```
 
-> Do **not** publish BAIA or write to Qdrant until independent audit and human
-> verification are complete.
+> Do **not** activate, publish or index the live BAIA tenant without explicit
+> owner approval. All end-to-end proofs run against test tenants.

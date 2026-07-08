@@ -1,22 +1,9 @@
 merqato-ai-resort-platform/
-├── .dockerignore
-├── .gitignore
 ├── .hermes/
 │   └── plan.md
-├── AGENTS.md
-├── BUILD_AND_RUN.md
-├── CLAUDE.md
-├── CODEBASE.md
-├── Dockerfile
-├── HERMES_AUDIT.md
-├── README.md
-├── ROADMAP.md
-├── THIRD_PARTY_NOTICES.md
-├── docker-compose.yml
 ├── docs/
 │   ├── DEPLOYMENT.md
 │   └── KNOWLEDGE_ARCHITECTURE.md
-├── eslint.config.mjs
 ├── fixtures/
 │   ├── baia_resort/
 │   │   ├── amenities.json
@@ -49,11 +36,6 @@ merqato-ai-resort-platform/
 │       ├── rooms.json
 │       ├── transport.json
 │       └── wifi_power.json
-├── next.config.ts
-├── package.json
-├── pnpm-lock.yaml
-├── pnpm-workspace.yaml
-├── postcss.config.mjs
 ├── public/
 │   ├── file.svg
 │   ├── globe.svg
@@ -62,24 +44,23 @@ merqato-ai-resort-platform/
 │   └── window.svg
 ├── services/
 │   └── agent-api/
-│       ├── Dockerfile
 │       ├── app/
-│       │   ├── __init__.py
 │       │   ├── agents/
 │       │   │   ├── __init__.py
 │       │   │   └── safety.py
 │       │   ├── api/
 │       │   │   ├── __init__.py
+│       │   │   ├── knowledge_routes.py
 │       │   │   └── routes.py
-│       │   ├── config.py
 │       │   ├── crews/
-│       │   │   ├── __init__.py
-│       │   │   └── concierge/
-│       │   │       ├── __init__.py
-│       │   │       ├── config/
-│       │   │       │   ├── agents.yaml
-│       │   │       │   └── tasks.yaml
-│       │   │       └── crew.py
+│       │   │   ├── concierge/
+│       │   │   │   ├── config/
+│       │   │   │   │   ├── agents.yaml
+│       │   │   │   │   └── tasks.yaml
+│       │   │   │   ├── __init__.py
+│       │   │   │   ├── crew.py
+│       │   │   │   └── flow.py
+│       │   │   └── __init__.py
 │       │   ├── knowledge/
 │       │   │   ├── __init__.py
 │       │   │   ├── chunker.py
@@ -87,11 +68,11 @@ merqato-ai-resort-platform/
 │       │   │   ├── formatter.py
 │       │   │   ├── ingestion_service.py
 │       │   │   ├── models.py
+│       │   │   ├── publishing_service.py
 │       │   │   ├── qdrant_store.py
 │       │   │   ├── repository.py
 │       │   │   ├── sample_repository.py
 │       │   │   └── supabase_backend.py
-│       │   ├── main.py
 │       │   ├── models/
 │       │   │   ├── __init__.py
 │       │   │   └── schemas.py
@@ -101,34 +82,55 @@ merqato-ai-resort-platform/
 │       │   ├── security/
 │       │   │   ├── __init__.py
 │       │   │   └── secrets.py
-│       │   └── services/
-│       │       ├── __init__.py
-│       │       ├── concierge_service.py
-│       │       ├── credentials.py
-│       │       ├── openrouter_validate.py
-│       │       └── tenant_resolver.py
-│       ├── pyproject.toml
-│       └── tests/
-│           ├── conftest.py
-│           ├── test_concierge.py
-│           ├── test_crewai.py
-│           ├── test_health.py
-│           ├── test_knowledge.py
-│           ├── test_openrouter_validate.py
-│           ├── test_sample_repository.py
-│           └── test_secrets.py
+│       │   ├── services/
+│       │   │   ├── __init__.py
+│       │   │   ├── concierge_service.py
+│       │   │   ├── credentials.py
+│       │   │   ├── openrouter_validate.py
+│       │   │   └── tenant_resolver.py
+│       │   ├── __init__.py
+│       │   ├── config.py
+│       │   └── main.py
+│       ├── tests/
+│       │   ├── conftest.py
+│       │   ├── qdrant_fakes.py
+│       │   ├── test_admin_knowledge_routes.py
+│       │   ├── test_backend_selection.py
+│       │   ├── test_concierge.py
+│       │   ├── test_crewai.py
+│       │   ├── test_e2e_proof.py
+│       │   ├── test_embeddings_fail_closed.py
+│       │   ├── test_flow.py
+│       │   ├── test_health.py
+│       │   ├── test_knowledge.py
+│       │   ├── test_openrouter_validate.py
+│       │   ├── test_publishing.py
+│       │   ├── test_sample_repository.py
+│       │   ├── test_secrets.py
+│       │   ├── test_supabase_backend.py
+│       │   └── test_tenant_gating.py
+│       ├── Dockerfile
+│       └── pyproject.toml
 ├── src/
 │   ├── app/
 │   │   ├── admin/
 │   │   │   ├── approvals/
 │   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
+│   │   │   ├── knowledge/
+│   │   │   │   ├── [category]/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
 │   │   │   ├── openrouter/
 │   │   │   │   └── page.tsx
-│   │   │   ├── page.tsx
-│   │   │   └── resort/
-│   │   │       └── page.tsx
+│   │   │   ├── resort/
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
 │   │   ├── api/
+│   │   │   ├── admin/
+│   │   │   │   └── knowledge/
+│   │   │   │       └── [...path]/
+│   │   │   │           └── route.ts
 │   │   │   ├── agent/
 │   │   │   │   └── route.ts
 │   │   │   ├── inquiry/
@@ -147,6 +149,7 @@ merqato-ai-resort-platform/
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── admin/
+│   │   │   ├── KnowledgeManager.tsx
 │   │   │   ├── OpenRouterSettings.tsx
 │   │   │   ├── ResortEditor.tsx
 │   │   │   └── StatCard.tsx
@@ -157,14 +160,14 @@ merqato-ai-resort-platform/
 │   │       ├── ConciergeWidget.tsx
 │   │       └── InquiryForm.tsx
 │   ├── lib/
-│   │   ├── brand.ts
-│   │   ├── concierge-ui.ts
-│   │   ├── config.ts
 │   │   ├── data/
 │   │   │   ├── dev-store.ts
 │   │   │   ├── index.ts
 │   │   │   ├── store.ts
 │   │   │   └── supabase-store.ts
+│   │   ├── brand.ts
+│   │   ├── concierge-ui.ts
+│   │   ├── config.ts
 │   │   └── types.ts
 │   ├── middleware.test.ts
 │   └── middleware.ts
@@ -172,5 +175,32 @@ merqato-ai-resort-platform/
 │   ├── migrations/
 │   │   └── 0001_knowledge_ingestion_foundation.sql
 │   └── schema.sql
+├── .dockerignore
+├── .gitignore
+├── AGENTS.md
+├── BUILD_AND_RUN.md
+├── CHATGPT_AUDIT.md
+├── CLAUDE.md
+├── CODE_TREE.txt
+├── CODEBASE.md
+├── docker-compose.yml
+├── Dockerfile
+├── eslint.config.mjs
+├── FILE_MANIFEST.csv
+├── FILE_MANIFEST_CHATGPT_AUDITED.csv
+├── GIT_STATE.md
+├── HERMES_AUDIT.md
+├── next-env.d.ts
+├── next.config.ts
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── postcss.config.mjs
+├── README.md
+├── ROADMAP.md
+├── TEST_RESULTS.md
+├── THIRD_PARTY_NOTICES.md
 ├── tsconfig.json
-└── vitest.config.ts
+├── tsconfig.tsbuildinfo
+├── vitest.config.ts
+└── WORKLOG.md
