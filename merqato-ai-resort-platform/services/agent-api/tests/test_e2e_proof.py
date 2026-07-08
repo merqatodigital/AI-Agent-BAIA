@@ -246,6 +246,7 @@ def test_safe_failure_when_credentials_missing(client, monkeypatch):
     # OpenRouter present but embeddings missing → still a controlled 503
     monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-e2e-not-real")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("KNOWLEDGE_EMBEDDING_PROVIDER", "openai")
     get_settings.cache_clear()
     r = _guest_ask(client, "Hello")
     assert r.status_code == 503

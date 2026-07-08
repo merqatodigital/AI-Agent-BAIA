@@ -16,9 +16,9 @@ from app.services.tenant_resolver import (
 
 # Construction of a real CrewAI LLM validates API-key presence but makes no
 # network call, so a dummy key is sufficient for unit construction.
-_DUMMY_KEY = "sk-or-dummy-not-real"
-os.environ.setdefault("OPENROUTER_API_KEY", _DUMMY_KEY)
-os.environ.setdefault("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+_DUMMY_KEY = "sk-test-openrouter-00000000000000000000"
+os.environ["OPENROUTER_API_KEY"] = _DUMMY_KEY
+os.environ["OPENROUTER_MODEL"] = "openai/gpt-4o-mini"
 
 
 def test_real_crewai_imports_exist():

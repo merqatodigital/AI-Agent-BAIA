@@ -126,6 +126,12 @@ def test_full_lifecycle_via_routes(client, admin_env, draft_tenant, fake_vectors
 
 def test_publish_fails_closed_without_embeddings(client, admin_env, draft_tenant, monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("KNOWLEDGE_EMBEDDING_PROVIDER", "openai")
+    # The baia_tenant fixture already populated the lru-cached settings with
+    # the .env defaults; clear so the provider override above takes effect.
+    from app.config import get_settings
+
+    get_settings.cache_clear()
     r = client.post(f"{BASE}/faq/draft", headers=HEADERS, json={"content": CONTENT})
     vid = r.json()["id"]
     client.post(f"{BASE}/versions/{vid}/verify", headers=HEADERS, json={})
