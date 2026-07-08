@@ -49,6 +49,20 @@ describe("temporary admin Basic Auth middleware", () => {
     expect(res.headers.get("WWW-Authenticate")).toContain("Basic");
   });
 
+  test("admin knowledge BFF API is protected", async () => {
+    process.env = {
+      ...origEnv,
+      TEMP_ADMIN_USERNAME: "admin",
+      TEMP_ADMIN_PASSWORD: "secret",
+    };
+    const denied = await middleware(makeReq("/api/admin/knowledge/categories"));
+    expect(denied.status).toBe(401);
+    const allowed = await middleware(
+      makeReq("/api/admin/knowledge/categories", BASIC),
+    );
+    expect(allowed.status).toBe(200);
+  });
+
   test("valid credentials are accepted", async () => {
     process.env = {
       ...origEnv,

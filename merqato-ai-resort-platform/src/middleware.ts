@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED_PREFIXES = [
   "/admin",
+  "/api/admin",
   "/api/mission-control",
   "/api/resort",
   "/api/openrouter",
@@ -66,5 +67,11 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // Do not match the explicitly public routes; guard only the listed prefixes.
-  matcher: ["/admin/:path*", "/api/mission-control/:path*", "/api/resort/:path*", "/api/openrouter/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/api/mission-control/:path*",
+    "/api/resort/:path*",
+    "/api/openrouter/:path*",
+  ],
 };
