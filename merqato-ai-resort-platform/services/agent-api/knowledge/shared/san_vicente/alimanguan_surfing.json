@@ -1,0 +1,46 @@
+{
+  "source_status": "user_provided_regional_intelligence",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "location": "Alimanguan",
+  "positioning": "Primary emerging surf scene in San Vicente",
+  "events": [
+    "San Vicente Surf Fest"
+  ],
+  "season": {
+    "monsoon": "Amihan (Northeast Monsoon)",
+    "months": [
+      "November",
+      "December",
+      "January",
+      "February",
+      "March"
+    ],
+    "peak_swell_months": [
+      "January",
+      "February"
+    ]
+  },
+  "break": {
+    "type": "Long sand-bottom beach break",
+    "best_for": [
+      "longboarding",
+      "noseriding",
+      "beginners"
+    ],
+    "conditions_note": "Can become fast and messy with strong wind."
+  },
+  "services": {
+    "board_rentals_available": true,
+    "local_instructors_available": true,
+    "example_local_group": "Katangsurf"
+  },
+  "live_check_fields": [
+    "daily swell",
+    "wind",
+    "tide",
+    "board availability",
+    "instructor availability",
+    "event dates"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "check_in": {
+    "start": "14:00",
+    "end": "21:00"
+  },
+  "front_desk_hours": {
+    "start": "08:00",
+    "end": "21:00"
+  },
+  "late_arrival_notice_required_after": "18:00",
+  "late_arrival_rule": "Guests arriving after 18:00 must contact the resort in advance.",
+  "check_out": {
+    "start": "07:00",
+    "end": "12:00"
+  },
+  "cancellation": {
+    "varies_by_channel": true,
+    "ota_non_refundable_options_apply": true,
+    "direct_booking_flexible_notice_hours": {
+      "min": 48,
+      "max": 72
+    },
+    "late_cancellation_penalty": "100% of the first night may apply"
+  },
+  "pets_allowed": false,
+  "large_group_parties_allowed": false,
+  "bachelor_bachelorette_parties_allowed": false,
+  "noise_events_allowed": false
+}
