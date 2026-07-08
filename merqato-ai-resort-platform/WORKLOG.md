@@ -26,7 +26,7 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 
 ## Milestone 3 — Admin workflow
 
-- [ ] 3.1 FastAPI knowledge-management routes (list categories, current version, create draft, verify, publish, unpublish/archive, version history, audit history, ingestion status) behind server-to-server auth
+- [x] 3.1 FastAPI knowledge-management routes (list categories, current version, create draft, verify, publish, unpublish/archive, version history, audit history, ingestion status) behind X-Admin-Token (fail closed when unset)
 - [ ] 3.2 Next.js BFF routes proxying the FastAPI knowledge routes (admin-protected, no keys in browser)
 - [ ] 3.3 `/admin/knowledge` page (category list + status)
 - [ ] 3.4 `/admin/knowledge/[category]` page (view/edit draft, verify, publish, unpublish, history, audits)

@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     # Required only when the OpenAI embedding provider is configured.
     openai_api_key: str = ""
 
+    # Admin knowledge API (server-to-server). The Next.js BFF sends this
+    # shared secret in X-Admin-Token; browsers never see it. When unset, the
+    # admin knowledge routes fail closed (503).
+    admin_api_token: str = ""
+
     # Service
     service_name: str = "merqato-agent-api"
     log_level: str = "INFO"
