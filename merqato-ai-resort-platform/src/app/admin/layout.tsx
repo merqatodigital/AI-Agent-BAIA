@@ -4,6 +4,7 @@ import { Wordmark } from "@/components/brand/Logo";
 const NAV = [
   { href: "/admin", label: "Mission Control" },
   { href: "/admin/resort", label: "Resort Editor" },
+  { href: "/admin/knowledge", label: "Knowledge Base" },
   { href: "/admin/approvals", label: "Approvals" },
   { href: "/admin/openrouter", label: "OpenRouter" },
 ];

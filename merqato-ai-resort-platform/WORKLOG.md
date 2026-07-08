@@ -28,8 +28,8 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 
 - [x] 3.1 FastAPI knowledge-management routes (list categories, current version, create draft, verify, publish, unpublish/archive, version history, audit history, ingestion status) behind X-Admin-Token (fail closed when unset)
 - [x] 3.2 Next.js BFF routes proxying the FastAPI knowledge routes (admin-protected, allowlisted subpaths, ADMIN_API_TOKEN server-side only)
-- [ ] 3.3 `/admin/knowledge` page (category list + status)
-- [ ] 3.4 `/admin/knowledge/[category]` page (view/edit draft, verify, publish, unpublish, history, audits)
+- [x] 3.3 `/admin/knowledge` page (category list + status)
+- [x] 3.4 `/admin/knowledge/[category]` page (view/edit draft, verify, publish, unpublish, history, audits, ingestion status)
 - [ ] 3.V Validation: full backend + frontend checks
 
 ## Milestone 4 — End-to-end proof
