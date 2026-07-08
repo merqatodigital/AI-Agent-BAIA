@@ -343,6 +343,22 @@ _default_memory: KnowledgeBackend | None = None
 
 
 def _default_backend() -> KnowledgeBackend:
+    """Select the runtime backend.
+
+    Live Supabase (service role) whenever SUPABASE_URL and
+    SUPABASE_SERVICE_ROLE_KEY are configured; the shared in-memory backend
+    otherwise (tests / zero-config local runs).
+    """
+    from app.config import get_settings  # local import: avoid settings at import time
+
+    settings = get_settings()
+    if settings.supabase_url and settings.supabase_service_role_key:
+        # Local import: supabase_backend imports from this module.
+        from app.knowledge.supabase_backend import SupabaseBackend
+
+        return SupabaseBackend(
+            settings.supabase_url, settings.supabase_service_role_key
+        )
     global _default_memory
     if _default_memory is None:
         _default_memory = _InMemoryBackend()

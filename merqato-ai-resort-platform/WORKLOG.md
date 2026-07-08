@@ -4,7 +4,7 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 
 ## Milestone 1 — Working agent runtime
 
-- [ ] 1.1 Use `SupabaseBackend` for real runtime requests (env-driven backend selection; memory stays test-only)
+- [x] 1.1 Use `SupabaseBackend` for real runtime requests (env-driven backend selection; memory stays test-only)
 - [ ] 1.2 Standardize the tenant slug to `baia-resort` (shared constant, frontend + BFF + backend + tests)
 - [ ] 1.3 Replace production fake embeddings with the existing real provider (fail closed when unconfigured)
 - [ ] 1.4 Pass the resolved OpenRouter key into the existing CrewAI LLM
