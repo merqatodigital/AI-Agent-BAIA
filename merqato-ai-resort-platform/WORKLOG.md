@@ -11,7 +11,7 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 - [x] 1.5 Add a CrewAI Flow around the existing `ConciergeCrew`; FastAPI calls the Flow
 - [x] 1.6 Handle draft, inactive and unknown tenants with safe responses at the route
 - [x] 1.7 Preserve `conversation_id` through the flow without fake memory (echoed in ConciergeResponse, no memory attached)
-- [ ] 1.V Validation: ruff + mypy + pytest, typecheck + ESLint + Vitest + build
+- [x] 1.V Validation: ruff clean, mypy clean, pytest 67 passed; tsc clean, ESLint clean, Vitest 6 passed, next build OK
 
 ## Milestone 2 — Safe knowledge publishing
 
