@@ -233,10 +233,16 @@ class TenantQdrantStore:
         )
 
         # Restrict to this tenant by construction (collection is per-tenant),
-        # but also assert tenant_id in payload for defense-in-depth.
+        # but also assert tenant_id in payload for defense-in-depth. Guests may
+        # only ever retrieve verified + published + guest-visible + non-internal
+        # content; every field below is written by build_embedded_points().
         filt = QFilter(
             must=[
                 FieldCondition(key="tenant_id", match=MatchValue(value=self.tenant_id)),
+                FieldCondition(
+                    key="verification_status", match=MatchValue(value="verified")
+                ),
+                FieldCondition(key="published", match=MatchValue(value=True)),
                 FieldCondition(key="guest_visible", match=MatchValue(value=True)),
                 FieldCondition(key="internal_only", match=MatchValue(value=False)),
             ]

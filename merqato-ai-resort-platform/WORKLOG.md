@@ -17,11 +17,11 @@ Small-loop execution log. One task per loop: inspect → implement → test → 
 
 - [x] 2.1 Concurrency-safe version creation; never overwrite history
 - [x] 2.2 Fix document upsert so it does not reset `current_version`
-- [ ] 2.3 Publish/unpublish repository operations (verified + published_at + guest_visible + !internal_only)
-- [ ] 2.4 Link ingestion jobs to the exact document version; record completed/failed correctly
-- [ ] 2.5 Audit records for every state change
-- [ ] 2.6 Publication metadata in Qdrant payload; index only on publish; remove on unpublish
-- [ ] 2.7 Qdrant search filters: tenant + verified + published + guest_visible + !internal_only
+- [x] 2.3 Publish/unpublish repository operations (verified + published_at + guest_visible + !internal_only) — PublishingService
+- [x] 2.4 Link ingestion jobs to the exact document version; record completed/failed correctly
+- [x] 2.5 Audit records for every state change (create_draft, verify_version, publish_version, publish_failed, unpublish_version, archive_version, ingest_version)
+- [x] 2.6 Publication metadata in Qdrant payload; index only on publish; remove on unpublish; rollback published_at on indexing failure
+- [x] 2.7 Qdrant search filters: tenant + verified + published + guest_visible + !internal_only
 - [ ] 2.V Validation: full backend + frontend checks
 
 ## Milestone 3 — Admin workflow

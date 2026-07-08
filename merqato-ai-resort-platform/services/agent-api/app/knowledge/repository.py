@@ -103,6 +103,29 @@ class KnowledgeRepository:
     ) -> None:
         self._backend.update_document_version(document_id, version)
 
+    def get_version(self, version_id: str) -> dict[str, Any] | None:
+        return self._backend.fetch_version(version_id)
+
+    def list_versions(self, document_id: str) -> list[dict[str, Any]]:
+        """All versions of a document, newest first. History is read-only."""
+        return self._backend.fetch_versions(document_id)
+
+    def list_documents(self, tenant_id: str) -> list[dict[str, Any]]:
+        return self._backend.fetch_documents(tenant_id)
+
+    # State columns that may change after a version row is created. The
+    # factual payload (content/checksum/version) is immutable forever.
+    _MUTABLE_VERSION_FIELDS = frozenset(
+        {"verification_status", "published_at", "approved_at", "approved_by"}
+    )
+
+    def update_version_state(self, version_id: str, **values: Any) -> None:
+        """Update lifecycle state of a version. Never touches content."""
+        illegal = set(values) - self._MUTABLE_VERSION_FIELDS
+        if illegal:
+            raise ValueError(f"immutable version fields cannot change: {sorted(illegal)}")
+        self._backend.update_version(version_id, values)
+
     # --- ingestion job ---------------------------------------------------
     def create_job(
         self,
@@ -138,6 +161,28 @@ class KnowledgeRepository:
             chunks_created=chunks_created,
             error_message=error_message,
             completed=completed,
+        )
+
+    def list_jobs(
+        self,
+        tenant_id: str,
+        *,
+        document_version_id: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        return self._backend.fetch_jobs(
+            tenant_id, document_version_id=document_version_id, limit=limit
+        )
+
+    def list_audits(
+        self,
+        tenant_id: str,
+        *,
+        document_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        return self._backend.fetch_audits(
+            tenant_id, document_id=document_id, limit=limit
         )
 
     # --- audit -----------------------------------------------------------
@@ -187,13 +232,43 @@ class KnowledgeBackend:
     def update_document_version(self, document_id: str, version: int) -> None:
         raise NotImplementedError
 
+    def fetch_version(self, version_id: str) -> dict[str, Any] | None:
+        raise NotImplementedError
+
+    def fetch_versions(self, document_id: str) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    def fetch_documents(self, tenant_id: str) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    def update_version(self, version_id: str, values: dict[str, Any]) -> None:
+        raise NotImplementedError
+
     def insert_job(self, **kwargs: Any) -> dict[str, Any]:
         raise NotImplementedError
 
     def update_job(self, job_id: str, **kwargs: Any) -> None:
         raise NotImplementedError
 
+    def fetch_jobs(
+        self,
+        tenant_id: str,
+        *,
+        document_version_id: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
     def insert_audit(self, **kwargs: Any) -> None:
+        raise NotImplementedError
+
+    def fetch_audits(
+        self,
+        tenant_id: str,
+        *,
+        document_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
         raise NotImplementedError
 
 
@@ -297,6 +372,24 @@ class _InMemoryBackend(KnowledgeBackend):
             if d["id"] == document_id:
                 d["current_version"] = version
 
+    def fetch_version(self, version_id: str) -> dict[str, Any] | None:
+        for v in self.versions:
+            if v["id"] == version_id:
+                return v
+        return None
+
+    def fetch_versions(self, document_id: str) -> list[dict[str, Any]]:
+        rows = [v for v in self.versions if v["document_id"] == document_id]
+        return sorted(rows, key=lambda v: v["version"], reverse=True)
+
+    def fetch_documents(self, tenant_id: str) -> list[dict[str, Any]]:
+        return [d for d in self.documents if d["tenant_id"] == tenant_id]
+
+    def update_version(self, version_id: str, values: dict[str, Any]) -> None:
+        for v in self.versions:
+            if v["id"] == version_id:
+                v.update(values)
+
     def insert_job(self, **kwargs: Any) -> dict[str, Any]:
         row = {
             "id": new_uuid(),
@@ -324,6 +417,18 @@ class _InMemoryBackend(KnowledgeBackend):
                 if kwargs.get("completed"):
                     j["completed_at"] = "now"
 
+    def fetch_jobs(
+        self,
+        tenant_id: str,
+        *,
+        document_version_id: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        rows = [j for j in self.jobs if j["tenant_id"] == tenant_id]
+        if document_version_id is not None:
+            rows = [j for j in rows if j.get("document_version_id") == document_version_id]
+        return list(reversed(rows))[:limit]
+
     def insert_audit(self, **kwargs: Any) -> None:
         self.audits.append(
             {
@@ -337,6 +442,18 @@ class _InMemoryBackend(KnowledgeBackend):
                 "metadata": kwargs.get("metadata", {}),
             }
         )
+
+    def fetch_audits(
+        self,
+        tenant_id: str,
+        *,
+        document_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        rows = [a for a in self.audits if a["tenant_id"] == tenant_id]
+        if document_id is not None:
+            rows = [a for a in rows if a.get("document_id") == document_id]
+        return list(reversed(rows))[:limit]
 
 
 # Process-wide default in-memory backend. Shared by any KnowledgeRepository()

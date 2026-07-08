@@ -2,8 +2,18 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
+
+
+def utc_now_iso() -> str:
+    """Explicit ISO-8601 UTC timestamp for REST payloads and Qdrant metadata.
+
+    PostgREST treats values literally — the string "now()" is NOT evaluated
+    as SQL — so timestamps are always generated here.
+    """
+    return datetime.now(UTC).isoformat()
 
 
 class Category(enum.StrEnum):

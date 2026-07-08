@@ -13,6 +13,7 @@ from app.knowledge.models import (
     IngestionStatus,
     SourceType,
     VerificationStatus,
+    utc_now_iso,
 )
 from app.knowledge.repository import KnowledgeRepository, sha256_hex
 from app.security.secrets import redact
@@ -35,6 +36,53 @@ def _is_indexable(status: str, guest_visible: bool, internal_only: bool) -> bool
         and guest_visible
         and not internal_only
     )
+
+
+def build_embedded_points(
+    ctx: TenantContext,
+    *,
+    document_id: str,
+    version_row: dict[str, Any],
+    category: str,
+    checksum: str,
+    chunks: list[Any],
+    vectors: list[list[float]],
+    source_filename: str | None,
+    published_at: str,
+) -> list[dict[str, Any]]:
+    """Build Qdrant points with the COMPLETE guest-safety payload.
+
+    Every point carries tenant scoping, the exact immutable version, and the
+    publication metadata (`published` + `published_at`) that retrieval filters
+    on. Shared by the ingestion (seed) path and the admin publish path so the
+    payload contract lives in exactly one place.
+    """
+    points: list[dict[str, Any]] = []
+    for c, vec in zip(chunks, vectors, strict=True):
+        points.append(
+            {
+                "id": f"{version_row['id']}-{c.chunk_index}",
+                "vector": vec,
+                "payload": {
+                    "tenant_id": ctx.tenant_id,
+                    "tenant_slug": ctx.tenant_slug,
+                    "document_id": document_id,
+                    "document_version_id": version_row["id"],
+                    "category": category,
+                    "version": version_row["version"],
+                    "checksum": checksum,
+                    "verification_status": VerificationStatus.VERIFIED.value,
+                    "guest_visible": True,
+                    "internal_only": False,
+                    "published": True,
+                    "published_at": published_at,
+                    "chunk_index": c.chunk_index,
+                    "source_filename": source_filename,
+                    "text": c.text,
+                },
+            }
+        )
+    return points
 
 
 class IngestionService:
@@ -121,6 +169,8 @@ class IngestionService:
             guest_visible=guest_visible,
             internal_only=internal_only,
         )
+        # The newly created immutable version becomes the document's current one.
+        self._repo.update_document_current_version(doc["id"], version["version"])
         # 8. record ingestion job, linked to the exact immutable version
         job = self._repo.create_job(
             tenant_id=ctx.tenant_id,
@@ -135,51 +185,53 @@ class IngestionService:
             _is_indexable(verification_status, guest_visible, internal_only)
             and self._publish
         )
+        published_at: str | None = None
         try:
             if indexable:
                 if self._embedder is None or self._qdrant_factory is None:
                     raise IngestionError("indexing requested but embedder/store unavailable")
+                # Publish in Supabase FIRST so state never lags behind Qdrant;
+                # reverted below if indexing fails (never silently disagree).
+                published_at = utc_now_iso()
+                self._repo.update_version_state(version["id"], published_at=published_at)
                 # 9-11. format, chunk, embed
                 chunks = chunk_document(
                     category, content, source_filename=source_filename
                 )
                 vectors = self._embedder.embed([c.text for c in chunks])
                 store = self._qdrant_factory(ctx)
-                # 13. upsert with complete payload
-                embedded = []
-                for c, vec in zip(chunks, vectors, strict=True):
-                    embedded.append(
-                        {
-                            "id": f"{version['id']}-{c.chunk_index}",
-                            "vector": vec,
-                            "payload": {
-                                "tenant_id": ctx.tenant_id,
-                                "tenant_slug": ctx.tenant_slug,
-                                "document_id": doc["id"],
-                                "document_version_id": version["id"],
-                                "category": category,
-                                "version": version["version"],
-                                "checksum": checksum,
-                                "verification_status": verification_status,
-                                "guest_visible": guest_visible,
-                                "internal_only": internal_only,
-                                "chunk_index": c.chunk_index,
-                                "source_filename": source_filename,
-                                "text": c.text,
-                            },
-                        }
-                    )
+                # 13. upsert with complete payload (incl. publication metadata)
+                embedded = build_embedded_points(
+                    ctx,
+                    document_id=doc["id"],
+                    version_row=version,
+                    category=category,
+                    checksum=checksum,
+                    chunks=chunks,
+                    vectors=vectors,
+                    source_filename=source_filename,
+                    published_at=published_at,
+                )
                 store.upsert_chunks(embedded)
                 self._repo.update_job(job["id"], chunks_created=len(embedded))
-                self._repo.update_job(job["id"], status=IngestionStatus.COMPLETED.value)
+                self._repo.update_job(
+                    job["id"], status=IngestionStatus.COMPLETED.value, completed=True
+                )
             else:
                 # Not indexable (draft / unpublished / internal) — job done, no vectors.
-                self._repo.update_job(job["id"], status=IngestionStatus.COMPLETED.value)
+                self._repo.update_job(
+                    job["id"], status=IngestionStatus.COMPLETED.value, completed=True
+                )
         except Exception as exc:  # noqa: BLE001 - fail closed, safe message
+            if published_at is not None:
+                # Roll the Supabase publication back so both stores agree
+                # (unpublished + no vectors) instead of disagreeing silently.
+                self._repo.update_version_state(version["id"], published_at=None)
             self._repo.update_job(
                 job["id"],
                 status=IngestionStatus.FAILED.value,
                 error_message=_safe_message(exc),
+                completed=True,
             )
             return IngestionResult(
                 tenant_slug=ctx.tenant_slug,

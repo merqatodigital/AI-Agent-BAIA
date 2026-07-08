@@ -12,22 +12,13 @@ All writes are additive/upsert and never mutate existing version history in plac
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Any
 
 import requests
 
+from app.knowledge.models import utc_now_iso as _utc_now_iso
 from app.knowledge.repository import KnowledgeBackend
 from app.security.secrets import redact
-
-
-def _utc_now_iso() -> str:
-    """Explicit ISO-8601 UTC timestamp for REST payloads.
-
-    PostgREST treats values literally — the string "now()" is NOT evaluated
-    as SQL, so timestamps must be generated here.
-    """
-    return datetime.now(UTC).isoformat()
 
 
 class VersionConflictError(RuntimeError):
@@ -227,6 +218,30 @@ class SupabaseBackend(KnowledgeBackend):
             {"current_version": version},
         )
 
+    def fetch_version(self, version_id: str) -> dict[str, Any] | None:
+        rows = self._get(_VERSIONS, {"id": f"eq.{version_id}", "select": "*", "limit": "1"})
+        return rows[0] if rows else None
+
+    def fetch_versions(self, document_id: str) -> list[dict[str, Any]]:
+        return self._get(
+            _VERSIONS,
+            {
+                "document_id": f"eq.{document_id}",
+                "select": "*",
+                "order": "version.desc",
+            },
+        )
+
+    def fetch_documents(self, tenant_id: str) -> list[dict[str, Any]]:
+        return self._get(
+            _DOCS,
+            {"tenant_id": f"eq.{tenant_id}", "select": "*", "order": "category.asc"},
+        )
+
+    def update_version(self, version_id: str, values: dict[str, Any]) -> None:
+        # Lifecycle-state PATCH only; the repository guards the allowed keys.
+        self._patch(_VERSIONS, {"id": f"eq.{version_id}"}, values)
+
     def insert_job(self, **kwargs: Any) -> dict[str, Any]:
         row = {
             "tenant_id": kwargs["tenant_id"],
@@ -253,6 +268,23 @@ class SupabaseBackend(KnowledgeBackend):
         if values:
             self._patch(_JOBS, {"id": f"eq.{job_id}"}, values)
 
+    def fetch_jobs(
+        self,
+        tenant_id: str,
+        *,
+        document_version_id: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        params = {
+            "tenant_id": f"eq.{tenant_id}",
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": str(limit),
+        }
+        if document_version_id is not None:
+            params["document_version_id"] = f"eq.{document_version_id}"
+        return self._get(_JOBS, params)
+
     def insert_audit(self, **kwargs: Any) -> None:
         row = {
             "tenant_id": kwargs["tenant_id"],
@@ -264,3 +296,20 @@ class SupabaseBackend(KnowledgeBackend):
             "metadata": kwargs.get("metadata", {}),
         }
         self._post(_AUDITS, row)
+
+    def fetch_audits(
+        self,
+        tenant_id: str,
+        *,
+        document_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        params = {
+            "tenant_id": f"eq.{tenant_id}",
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": str(limit),
+        }
+        if document_id is not None:
+            params["document_id"] = f"eq.{document_id}"
+        return self._get(_AUDITS, params)
