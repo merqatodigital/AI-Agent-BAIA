@@ -76,5 +76,4 @@ Released under the [MIT License](LICENSE).
 ## Contact
 
 **MerQato** · San Vicente, Palawan, Philippines
-📱 WhatsApp: [+63 967 206 2327](https://wa.me/639672062327)
 🔗 Live site: <https://baia-san-vicente-palawan-island.vercel.app>
