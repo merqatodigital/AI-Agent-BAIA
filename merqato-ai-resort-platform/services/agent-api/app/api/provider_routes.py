@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 from typing import Literal
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -19,26 +19,27 @@ router = APIRouter(
     dependencies=[Depends(require_admin_token)],
 )
 
-ProviderMode = Literal["automatic", "openrouter", "ollama"]
+RuntimeMode = Literal["openrouter", "ollama", "hermes"]
+HermesProvider = Literal["openrouter", "ollama"]
 
 
 class ProviderSettingsIn(BaseModel):
-    mode: ProviderMode = "automatic"
+    mode: RuntimeMode = "openrouter"
     openrouter_api_key: str | None = None
     openrouter_model: str = "openai/gpt-4o-mini"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:3b"
-    allow_fallback: bool = False
+    hermes_provider: HermesProvider = "openrouter"
 
 
 class ProviderSettingsOut(BaseModel):
-    mode: ProviderMode
+    mode: RuntimeMode
     openrouter_configured: bool
     openrouter_key_masked: str | None = None
     openrouter_model: str
     ollama_base_url: str
     ollama_model: str
-    allow_fallback: bool
+    hermes_provider: HermesProvider
 
 
 class OllamaDetectRequest(BaseModel):
@@ -51,6 +52,21 @@ class OllamaDetectResponse(BaseModel):
     message: str
 
 
+class OpenRouterModelsRequest(BaseModel):
+    api_key: str | None = None
+
+
+class OpenRouterModel(BaseModel):
+    id: str
+    name: str
+    is_free: bool = False
+    context_length: int | None = None
+
+
+class OpenRouterModelsResponse(BaseModel):
+    models: list[OpenRouterModel] = Field(default_factory=list)
+
+
 def _store_path() -> Path:
     configured = os.getenv("PROVIDER_SETTINGS_PATH", ".data/provider-settings.json")
     path = Path(configured)
@@ -61,17 +77,11 @@ def _store_path() -> Path:
 def _fernet() -> Fernet:
     key = os.getenv("PROVIDER_SETTINGS_ENCRYPTION_KEY", "").strip()
     if not key:
-        raise HTTPException(
-            status_code=503,
-            detail="provider settings encryption is not configured",
-        )
+        raise HTTPException(status_code=503, detail="provider settings encryption is not configured")
     try:
         return Fernet(key.encode("utf-8"))
     except (ValueError, TypeError) as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="provider settings encryption key is invalid",
-        ) from exc
+        raise HTTPException(status_code=503, detail="provider settings encryption key is invalid") from exc
 
 
 def _load_all() -> dict[str, dict[str, object]]:
@@ -110,14 +120,19 @@ def _decrypt_key(value: object) -> str | None:
 def _to_output(raw: dict[str, object]) -> ProviderSettingsOut:
     key = _decrypt_key(raw.get("openrouter_api_key_encrypted"))
     return ProviderSettingsOut(
-        mode=str(raw.get("mode", "automatic")),
+        mode=str(raw.get("mode", "openrouter")),
         openrouter_configured=bool(key),
         openrouter_key_masked=_mask_key(key),
         openrouter_model=str(raw.get("openrouter_model", "openai/gpt-4o-mini")),
         ollama_base_url=str(raw.get("ollama_base_url", "http://localhost:11434")),
         ollama_model=str(raw.get("ollama_model", "qwen2.5:3b")),
-        allow_fallback=bool(raw.get("allow_fallback", False)),
+        hermes_provider=str(raw.get("hermes_provider", "openrouter")),
     )
+
+
+def _saved_openrouter_key(slug: str) -> str | None:
+    raw = _load_all().get(slug, {})
+    return _decrypt_key(raw.get("openrouter_api_key_encrypted"))
 
 
 @router.get("", response_model=ProviderSettingsOut)
@@ -127,11 +142,11 @@ def get_provider_settings(slug: str) -> ProviderSettingsOut:
     if not raw:
         settings = get_settings()
         raw = {
-            "mode": "automatic",
+            "mode": "openrouter",
             "openrouter_model": settings.openrouter_model,
             "ollama_base_url": settings.ollama_base_url,
             "ollama_model": settings.ollama_model,
-            "allow_fallback": False,
+            "hermes_provider": "openrouter",
         }
     return _to_output(raw)
 
@@ -150,7 +165,7 @@ def save_provider_settings(slug: str, body: ProviderSettingsIn) -> ProviderSetti
         "openrouter_model": body.openrouter_model,
         "ollama_base_url": body.ollama_base_url.rstrip("/"),
         "ollama_model": body.ollama_model,
-        "allow_fallback": body.allow_fallback,
+        "hermes_provider": body.hermes_provider,
     }
     data[slug] = raw
     _save_all(data)
@@ -167,6 +182,44 @@ def delete_openrouter_key(slug: str) -> ProviderSettingsOut:
     return _to_output(raw)
 
 
+@router.post("/openrouter/models", response_model=OpenRouterModelsResponse)
+def list_openrouter_models(slug: str, body: OpenRouterModelsRequest) -> OpenRouterModelsResponse:
+    api_key = (body.api_key or "").strip() or _saved_openrouter_key(slug)
+    if not api_key:
+        raise HTTPException(status_code=400, detail="OpenRouter API key required")
+
+    request = Request(
+        "https://openrouter.ai/api/v1/models",
+        headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
+    )
+    try:
+        with urlopen(request, timeout=15) as response:  # noqa: S310 - fixed OpenRouter endpoint
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        raise HTTPException(status_code=400, detail="OpenRouter rejected the API key") from exc
+    except (URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=502, detail="Unable to load OpenRouter models") from exc
+
+    models: list[OpenRouterModel] = []
+    for item in payload.get("data", []):
+        if not isinstance(item, dict) or not item.get("id"):
+            continue
+        pricing = item.get("pricing") if isinstance(item.get("pricing"), dict) else {}
+        prompt_price = str(pricing.get("prompt", ""))
+        completion_price = str(pricing.get("completion", ""))
+        is_free = prompt_price in {"0", "0.0", "0.000000"} and completion_price in {"0", "0.0", "0.000000"}
+        models.append(
+            OpenRouterModel(
+                id=str(item["id"]),
+                name=str(item.get("name") or item["id"]),
+                is_free=is_free,
+                context_length=item.get("context_length") if isinstance(item.get("context_length"), int) else None,
+            )
+        )
+    models.sort(key=lambda model: (not model.is_free, model.name.lower()))
+    return OpenRouterModelsResponse(models=models)
+
+
 @router.post("/ollama/detect", response_model=OllamaDetectResponse)
 def detect_ollama(slug: str, body: OllamaDetectRequest) -> OllamaDetectResponse:
     del slug
@@ -175,7 +228,7 @@ def detect_ollama(slug: str, body: OllamaDetectRequest) -> OllamaDetectResponse:
     try:
         with urlopen(request, timeout=3) as response:  # noqa: S310 - admin-configured local endpoint
             payload = json.loads(response.read().decode("utf-8"))
-    except (URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+    except (URLError, TimeoutError, OSError, json.JSONDecodeError):
         return OllamaDetectResponse(
             available=False,
             models=[],
