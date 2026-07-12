@@ -2,37 +2,39 @@
 
 import { useEffect, useState } from "react";
 
-type ProviderMode = "automatic" | "openrouter" | "ollama";
+type RuntimeMode = "openrouter" | "ollama" | "hermes";
+type HermesProvider = "openrouter" | "ollama";
 
 type ProviderSettings = {
-  mode: ProviderMode;
+  mode: RuntimeMode;
   openrouter_configured: boolean;
   openrouter_key_masked?: string | null;
   openrouter_model: string;
   ollama_base_url: string;
   ollama_model: string;
-  allow_fallback: boolean;
+  hermes_provider: HermesProvider;
 };
 
-const OPENROUTER_MODELS = [
-  "openai/gpt-4o-mini",
-  "anthropic/claude-3.5-haiku",
-  "google/gemini-flash-1.5",
-  "meta-llama/llama-3.1-8b-instruct",
-];
+type OpenRouterModel = {
+  id: string;
+  name: string;
+  is_free: boolean;
+  context_length?: number | null;
+};
 
 const DEFAULTS: ProviderSettings = {
-  mode: "automatic",
+  mode: "openrouter",
   openrouter_configured: false,
-  openrouter_model: OPENROUTER_MODELS[0],
+  openrouter_model: "openai/gpt-4o-mini",
   ollama_base_url: "http://localhost:11434",
   ollama_model: "qwen2.5:3b",
-  allow_fallback: false,
+  hermes_provider: "openrouter",
 };
 
 export function OpenRouterSettings() {
   const [settings, setSettings] = useState<ProviderSettings>(DEFAULTS);
   const [apiKey, setApiKey] = useState("");
+  const [openRouterModels, setOpenRouterModels] = useState<OpenRouterModel[]>([]);
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -53,9 +55,41 @@ export function OpenRouterSettings() {
     }
   }
 
+  async function loadOpenRouterModels() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/ai-provider", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "list_openrouter_models",
+          api_key: apiKey || null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? json.detail ?? "Unable to load OpenRouter models");
+      const models = Array.isArray(json.models) ? json.models : [];
+      setOpenRouterModels(models);
+      if (models.length && !models.some((model: OpenRouterModel) => model.id === settings.openrouter_model)) {
+        setSettings((current) => ({ ...current, openrouter_model: models[0].id }));
+      }
+      setMessage(`Loaded ${models.length} OpenRouter models, including free and paid options.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load OpenRouter models");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function testOpenRouter() {
+    if (!apiKey && !settings.openrouter_configured) {
+      setError("Enter or save an OpenRouter key before testing.");
+      return;
+    }
     if (!apiKey) {
-      setError("Enter an OpenRouter key before testing.");
+      setMessage("Saved OpenRouter key is configured. Load models to verify it.");
       return;
     }
     setBusy(true);
@@ -120,14 +154,14 @@ export function OpenRouterSettings() {
           openrouter_model: settings.openrouter_model,
           ollama_base_url: settings.ollama_base_url,
           ollama_model: settings.ollama_model,
-          allow_fallback: settings.allow_fallback,
+          hermes_provider: settings.hermes_provider,
         }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? json.detail ?? "Save failed");
       setSettings(json);
       setApiKey("");
-      setMessage("AI provider settings saved securely.");
+      setMessage("AI runtime settings saved securely.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -135,31 +169,51 @@ export function OpenRouterSettings() {
     }
   }
 
+  const runtimeOptions: Array<{ value: RuntimeMode; title: string; description: string }> = [
+    {
+      value: "openrouter",
+      title: "OpenRouter",
+      description: "Use any available OpenRouter model directly. Free and paid models are supported.",
+    },
+    {
+      value: "ollama",
+      title: "Local Ollama",
+      description: "Use a model installed on the machine running the FastAPI service.",
+    },
+    {
+      value: "hermes",
+      title: "Hermes Agent",
+      description: "Enable BAIA's hospitality agent, knowledge tools, routing, and human escalation.",
+    },
+  ];
+
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl">
       <p className="eyebrow">Integrations</p>
-      <h1 className="mt-2 font-serif text-4xl">AI Provider</h1>
+      <h1 className="mt-2 font-serif text-4xl">AI Runtime</h1>
       <p className="mt-3 text-sm text-ink/70">
-        Use OpenRouter in hosted production, Ollama on a machine that runs the agent service,
-        or Automatic mode with an explicit fallback.
+        Choose a direct model provider or enable Hermes as the full BAIA hospitality agent.
       </p>
 
       <div className="card mt-8 space-y-6 p-6">
-        <div>
-          <label className="text-sm font-medium text-ink">Provider mode</label>
-          <select
-            value={settings.mode}
-            onChange={(event) => setSettings({ ...settings, mode: event.target.value as ProviderMode })}
-            className="mt-2 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
-          >
-            <option value="automatic">Automatic</option>
-            <option value="openrouter">OpenRouter only</option>
-            <option value="ollama">Ollama only</option>
-          </select>
+        <div className="grid gap-3 md:grid-cols-3">
+          {runtimeOptions.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              onClick={() => setSettings({ ...settings, mode: option.value })}
+              className={`rounded-2xl border p-5 text-left transition ${
+                settings.mode === option.value ? "border-accent bg-accent/5" : "border-line"
+              }`}
+            >
+              <span className="font-serif text-xl">{option.title}</span>
+              <span className="mt-2 block text-sm text-muted">{option.description}</span>
+            </button>
+          ))}
         </div>
 
         <section className="rounded-2xl border border-line p-5">
-          <h2 className="font-serif text-xl">OpenRouter</h2>
+          <h2 className="font-serif text-xl">OpenRouter models</h2>
           <p className="mt-1 text-sm text-muted">
             Status: {settings.openrouter_configured ? `Configured (${settings.openrouter_key_masked})` : "Not configured"}
           </p>
@@ -170,22 +224,40 @@ export function OpenRouterSettings() {
             placeholder={settings.openrouter_configured ? "Enter a new key to replace the saved key" : "sk-or-v1-…"}
             className="mt-4 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
           />
-          <select
-            value={settings.openrouter_model}
-            onChange={(event) => setSettings({ ...settings, openrouter_model: event.target.value })}
-            className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
-          >
-            {OPENROUTER_MODELS.map((model) => <option key={model}>{model}</option>)}
-          </select>
-          <button onClick={testOpenRouter} disabled={busy || !apiKey} className="mt-4 rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
-            Test OpenRouter
-          </button>
+          {openRouterModels.length ? (
+            <select
+              value={settings.openrouter_model}
+              onChange={(event) => setSettings({ ...settings, openrouter_model: event.target.value })}
+              className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+            >
+              {openRouterModels.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.is_free ? "FREE · " : "PAID · "}{model.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              value={settings.openrouter_model}
+              onChange={(event) => setSettings({ ...settings, openrouter_model: event.target.value })}
+              className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+              placeholder="openai/gpt-4o-mini"
+            />
+          )}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button onClick={loadOpenRouterModels} disabled={busy || (!apiKey && !settings.openrouter_configured)} className="rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
+              Load all models
+            </button>
+            <button onClick={testOpenRouter} disabled={busy || (!apiKey && !settings.openrouter_configured)} className="rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
+              Test OpenRouter
+            </button>
+          </div>
         </section>
 
         <section className="rounded-2xl border border-line p-5">
-          <h2 className="font-serif text-xl">Local Ollama</h2>
+          <h2 className="font-serif text-xl">Local Ollama models</h2>
           <p className="mt-1 text-sm text-muted">
-            Ollama must be reachable from the same machine or network as the FastAPI agent service.
+            Detects models installed on the same machine or network as the FastAPI service.
           </p>
           <input
             value={settings.ollama_base_url}
@@ -209,24 +281,32 @@ export function OpenRouterSettings() {
             />
           )}
           <button onClick={detectOllama} disabled={busy} className="mt-4 rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
-            Detect Ollama models
+            Detect installed models
           </button>
         </section>
 
-        <label className="flex items-center gap-3 text-sm text-ink">
-          <input
-            type="checkbox"
-            checked={settings.allow_fallback}
-            onChange={(event) => setSettings({ ...settings, allow_fallback: event.target.checked })}
-          />
-          Allow fallback to the other configured provider
-        </label>
+        {settings.mode === "hermes" && (
+          <section className="rounded-2xl border border-accent bg-accent/5 p-5">
+            <h2 className="font-serif text-xl">Hermes Agent</h2>
+            <p className="mt-1 text-sm text-muted">
+              Hermes adds BAIA hospitality behavior, verified knowledge retrieval, intent routing, and human escalation. Choose the model provider Hermes will use.
+            </p>
+            <select
+              value={settings.hermes_provider}
+              onChange={(event) => setSettings({ ...settings, hermes_provider: event.target.value as HermesProvider })}
+              className="mt-4 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+            >
+              <option value="openrouter">Hermes powered by OpenRouter</option>
+              <option value="ollama">Hermes powered by local Ollama</option>
+            </select>
+          </section>
+        )}
 
         {message && <p className="rounded-xl bg-forest/10 p-4 text-sm text-forest">✓ {message}</p>}
         {error && <p className="rounded-xl bg-danger/10 p-4 text-sm text-danger">✗ {error}</p>}
 
         <button onClick={saveSettings} disabled={busy} className="rounded-full bg-accent px-6 py-2 text-sm font-semibold text-warmwhite disabled:opacity-50">
-          {busy ? "Working…" : "Save AI provider settings"}
+          {busy ? "Working…" : "Save AI runtime settings"}
         </button>
       </div>
     </div>
