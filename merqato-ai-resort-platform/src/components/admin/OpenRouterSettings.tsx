@@ -1,153 +1,233 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const RECOMMENDED_MODELS = [
+type ProviderMode = "automatic" | "openrouter" | "ollama";
+
+type ProviderSettings = {
+  mode: ProviderMode;
+  openrouter_configured: boolean;
+  openrouter_key_masked?: string | null;
+  openrouter_model: string;
+  ollama_base_url: string;
+  ollama_model: string;
+  allow_fallback: boolean;
+};
+
+const OPENROUTER_MODELS = [
   "openai/gpt-4o-mini",
   "anthropic/claude-3.5-haiku",
   "google/gemini-flash-1.5",
   "meta-llama/llama-3.1-8b-instruct",
 ];
 
-/**
- * OpenRouter admin: paste the CUSTOMER's own key, test the connection through
- * the FastAPI service, and choose a model. This UI only validates via
- * /api/openrouter (a BFF proxy to FastAPI /v1/openrouter/validate). It never
- * transmits MerQato credentials and never performs OpenRouter calls directly.
- */
-export function OpenRouterSettings() {
-  const [key, setKey] = useState("");
-  const [model, setModel] = useState<string>(RECOMMENDED_MODELS[0]);
-  const [testing, setTesting] = useState(false);
-  const [test, setTest] = useState<{
-    valid: boolean;
-    model?: string;
-    message?: string;
-  } | null>(null);
-  const [saved, setSaved] = useState(false);
+const DEFAULTS: ProviderSettings = {
+  mode: "automatic",
+  openrouter_configured: false,
+  openrouter_model: OPENROUTER_MODELS[0],
+  ollama_base_url: "http://localhost:11434",
+  ollama_model: "qwen2.5:3b",
+  allow_fallback: false,
+};
 
-  async function runTest() {
-    setTesting(true);
-    setTest(null);
+export function OpenRouterSettings() {
+  const [settings, setSettings] = useState<ProviderSettings>(DEFAULTS);
+  const [apiKey, setApiKey] = useState("");
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void loadSettings();
+  }, []);
+
+  async function loadSettings() {
+    try {
+      const res = await fetch("/api/admin/ai-provider", { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? json.detail ?? "Unable to load settings");
+      setSettings(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load settings");
+    }
+  }
+
+  async function testOpenRouter() {
+    if (!apiKey) {
+      setError("Enter an OpenRouter key before testing.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setMessage(null);
     try {
       const res = await fetch("/api/openrouter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: key, model }),
+        body: JSON.stringify({ api_key: apiKey, model: settings.openrouter_model }),
       });
       const json = await res.json();
-      setTest(json);
-    } catch {
-      setTest({ valid: false, message: "Network error" });
+      if (!res.ok || !json.valid) throw new Error(json.message ?? "Connection failed");
+      setMessage(`OpenRouter connected with ${json.model ?? settings.openrouter_model}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
     } finally {
-      setTesting(false);
+      setBusy(false);
+    }
+  }
+
+  async function detectOllama() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/ai-provider", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "detect_ollama",
+          base_url: settings.ollama_base_url,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.available) throw new Error(json.message ?? json.detail ?? "Ollama not detected");
+      const models = Array.isArray(json.models) ? json.models : [];
+      setOllamaModels(models);
+      if (models.length && !models.includes(settings.ollama_model)) {
+        setSettings((current) => ({ ...current, ollama_model: models[0] }));
+      }
+      setMessage(json.message);
+    } catch (err) {
+      setOllamaModels([]);
+      setError(err instanceof Error ? err.message : "Ollama not detected");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveSettings() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/ai-provider", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: settings.mode,
+          openrouter_api_key: apiKey || null,
+          openrouter_model: settings.openrouter_model,
+          ollama_base_url: settings.ollama_base_url,
+          ollama_model: settings.ollama_model,
+          allow_fallback: settings.allow_fallback,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? json.detail ?? "Save failed");
+      setSettings(json);
+      setApiKey("");
+      setMessage("AI provider settings saved securely.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <p className="eyebrow">Integrations</p>
-      <h1 className="mt-2 font-serif text-4xl">OpenRouter</h1>
+      <h1 className="mt-2 font-serif text-4xl">AI Provider</h1>
       <p className="mt-3 text-sm text-ink/70">
-        Connect your own OpenRouter API key. The AI concierge and agents run on
-        your account and your credits — MerQato never bills you for tokens.
+        Use OpenRouter in hosted production, Ollama on a machine that runs the agent service,
+        or Automatic mode with an explicit fallback.
       </p>
 
-      <div className="card mt-8 space-y-5 p-6">
+      <div className="card mt-8 space-y-6 p-6">
         <div>
-          <label className="text-sm font-medium text-ink">API Key</label>
-          <input
-            type="password"
-            value={key}
-            onChange={(e) => {
-              setKey(e.target.value);
-              setSaved(false);
-            }}
-            placeholder="sk-or-v1-…"
-            className="mt-2 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm outline-none focus:border-accent"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-ink">Model</label>
+          <label className="text-sm font-medium text-ink">Provider mode</label>
           <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm outline-none focus:border-accent"
+            value={settings.mode}
+            onChange={(event) => setSettings({ ...settings, mode: event.target.value as ProviderMode })}
+            className="mt-2 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
           >
-            {RECOMMENDED_MODELS.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
+            <option value="automatic">Automatic</option>
+            <option value="openrouter">OpenRouter only</option>
+            <option value="ollama">Ollama only</option>
           </select>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={runTest}
-            disabled={testing || !key}
-            className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-warmwhite transition hover:opacity-90 disabled:opacity-50"
-          >
-            {testing ? "Testing…" : "Test connection"}
-          </button>
-          <button
-            onClick={() => setSaved(true)}
-            disabled={!key}
-            className="rounded-full border border-line px-5 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
-          >
-            Save
-          </button>
-        </div>
-
-        {test && (
-          <div
-            className={`rounded-xl p-4 text-sm ${
-              test.valid
-                ? "bg-forest/10 text-forest"
-                : "bg-danger/10 text-danger"
-            }`}
-          >
-            {test.valid ? (
-              <p>
-                ✓ Connected · model <strong>{test.model}</strong>
-              </p>
-            ) : (
-              <p>✗ {test.message ?? "Connection failed"}</p>
-            )}
-          </div>
-        )}
-        {saved && (
-          <p className="rounded-xl bg-forest/10 p-4 text-sm text-forest">
-            ✓ Settings saved for this resort (persisted to your server config).
+        <section className="rounded-2xl border border-line p-5">
+          <h2 className="font-serif text-xl">OpenRouter</h2>
+          <p className="mt-1 text-sm text-muted">
+            Status: {settings.openrouter_configured ? `Configured (${settings.openrouter_key_masked})` : "Not configured"}
           </p>
-        )}
-      </div>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(event) => setApiKey(event.target.value)}
+            placeholder={settings.openrouter_configured ? "Enter a new key to replace the saved key" : "sk-or-v1-…"}
+            className="mt-4 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+          />
+          <select
+            value={settings.openrouter_model}
+            onChange={(event) => setSettings({ ...settings, openrouter_model: event.target.value })}
+            className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+          >
+            {OPENROUTER_MODELS.map((model) => <option key={model}>{model}</option>)}
+          </select>
+          <button onClick={testOpenRouter} disabled={busy || !apiKey} className="mt-4 rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
+            Test OpenRouter
+          </button>
+        </section>
 
-      <div className="mt-8 card p-6">
-        <h2 className="font-serif text-xl">Usage</h2>
-        <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-2xl font-semibold text-ink">—</p>
-            <p className="text-xs uppercase tracking-widest text-muted">Today</p>
-          </div>
-          <div>
-            <p className="text-2xl font-semibold text-ink">—</p>
-            <p className="text-xs uppercase tracking-widest text-muted">
-              This month
-            </p>
-          </div>
-          <div>
-            <p className="text-2xl font-semibold text-ink">—</p>
-            <p className="text-xs uppercase tracking-widest text-muted">
-              Est. cost
-            </p>
-          </div>
-        </div>
-        <p className="mt-4 text-xs text-muted">
-          Live token accounting appears once your key is connected and traffic
-          flows through OpenRouter.
-        </p>
+        <section className="rounded-2xl border border-line p-5">
+          <h2 className="font-serif text-xl">Local Ollama</h2>
+          <p className="mt-1 text-sm text-muted">
+            Ollama must be reachable from the same machine or network as the FastAPI agent service.
+          </p>
+          <input
+            value={settings.ollama_base_url}
+            onChange={(event) => setSettings({ ...settings, ollama_base_url: event.target.value })}
+            className="mt-4 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+          />
+          {ollamaModels.length ? (
+            <select
+              value={settings.ollama_model}
+              onChange={(event) => setSettings({ ...settings, ollama_model: event.target.value })}
+              className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+            >
+              {ollamaModels.map((model) => <option key={model}>{model}</option>)}
+            </select>
+          ) : (
+            <input
+              value={settings.ollama_model}
+              onChange={(event) => setSettings({ ...settings, ollama_model: event.target.value })}
+              className="mt-3 w-full rounded-xl border border-line bg-bg px-4 py-2 text-sm"
+              placeholder="qwen2.5:3b"
+            />
+          )}
+          <button onClick={detectOllama} disabled={busy} className="mt-4 rounded-full border border-line px-5 py-2 text-sm font-semibold disabled:opacity-50">
+            Detect Ollama models
+          </button>
+        </section>
+
+        <label className="flex items-center gap-3 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={settings.allow_fallback}
+            onChange={(event) => setSettings({ ...settings, allow_fallback: event.target.checked })}
+          />
+          Allow fallback to the other configured provider
+        </label>
+
+        {message && <p className="rounded-xl bg-forest/10 p-4 text-sm text-forest">✓ {message}</p>}
+        {error && <p className="rounded-xl bg-danger/10 p-4 text-sm text-danger">✗ {error}</p>}
+
+        <button onClick={saveSettings} disabled={busy} className="rounded-full bg-accent px-6 py-2 text-sm font-semibold text-warmwhite disabled:opacity-50">
+          {busy ? "Working…" : "Save AI provider settings"}
+        </button>
       </div>
     </div>
   );
