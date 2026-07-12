@@ -20,9 +20,11 @@ async function forward(
   const suffix =
     method === "POST" && action === "detect_ollama"
       ? "/ollama/detect"
-      : method === "DELETE"
-        ? "/openrouter-key"
-        : "";
+      : method === "POST" && action === "list_openrouter_models"
+        ? "/openrouter/models"
+        : method === "DELETE"
+          ? "/openrouter-key"
+          : "";
 
   let upstream: Response;
   try {
@@ -40,7 +42,9 @@ async function forward(
             : JSON.stringify(
                 action === "detect_ollama"
                   ? { base_url: body?.base_url }
-                  : body,
+                  : action === "list_openrouter_models"
+                    ? { api_key: body?.api_key ?? null }
+                    : body,
               ),
         signal: AbortSignal.timeout(30_000),
       },
