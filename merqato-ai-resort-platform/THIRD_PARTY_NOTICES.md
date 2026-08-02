@@ -42,6 +42,21 @@ of its own; it proxies to the FastAPI service, which constructs real
 
 ---
 
+## Hugging Face speech-to-speech — Apache License 2.0
+
+**Version used:** `speech-to-speech` **0.2.11** (Python package, installed from
+PyPI into `services/voice-api`).
+
+The optional voice service uses this package for realtime WebRTC transport,
+voice activity detection, speech recognition, and speech synthesis. Resort
+knowledge, agent orchestration, and safety remain in TALA's CrewAI service.
+
+**License:** Apache-2.0
+
+**Source:** https://github.com/huggingface/speech-to-speech
+
+---
+
 ## Other notable dependencies (summary)
 
 | Package | Version (pinned) | License |

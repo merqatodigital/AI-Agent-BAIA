@@ -8,6 +8,7 @@ operations, and human-approval workflows.
 ## Stack
 - Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 — public site, guest concierge UI, admin & Mission Control
 - **FastAPI (Python) + the actual CrewAI framework** — dedicated agent service (`services/agent-api`). This is the *only* production agent engine.
+- **Hugging Face speech-to-speech** — optional isolated WebRTC voice runtime (`services/voice-api`) with Faster Whisper STT and Kokoro TTS; TALA/CrewAI remains the brain.
 - OpenRouter for LLMs — **customer supplies their own key** (read by the agent service)
 - Supabase (PostgreSQL + pgvector + Auth + Storage) — optional
 
@@ -142,6 +143,17 @@ pnpm dev
 docker compose up --build
 # web: http://localhost:3000  · agent-api: http://localhost:8000
 ```
+
+### Docker with TALA voice
+
+```bash
+docker compose --profile voice up --build
+# web: http://localhost:3000 · voice signaling: internal via /api/voice/calls
+```
+
+The first voice start downloads speech models. The voice service is isolated
+from `agent-api` so Torch/audio dependencies cannot destabilize the working
+CrewAI concierge. See `services/voice-api/README.md`.
 
 ### ⚠ PYTHONPATH isolation workaround (this environment)
 The Hermes desktop terminal session injects `PYTHONPATH` pointing at the

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { SuggestedQuestion, PopularTopic } from "@/lib/concierge-ui";
+import { useTalaVoice, type TalaVoiceStatus } from "./useTalaVoice";
 
 /**
  * Public AI Concierge chat — mirrors the KAPWA "AI Concierge" mockup:
@@ -24,7 +25,17 @@ type ChatMessage = { role: "guest"; text: string } | HostMessage;
 
 const GREETING: HostMessage = {
   role: "host",
-  text: "Hi! I'm your AI Concierge. Ask me anything about your stay, our resort, San Vicente, or Palawan.",
+  text: "Hi! I'm TALA, your digital concierge. Ask me anything about your stay, our resort, San Vicente, or Palawan.",
+};
+
+const VOICE_STATUS: Record<TalaVoiceStatus, string> = {
+  idle: "Voice is ready",
+  connecting: "Connecting to TALA…",
+  listening: "TALA is listening",
+  "user-speaking": "Listening to you…",
+  thinking: "TALA is thinking…",
+  speaking: "TALA is speaking",
+  error: "Voice needs attention",
 };
 
 export function ConciergeChat({
@@ -37,6 +48,17 @@ export function ConciergeChat({
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const voice = useTalaVoice({
+    audioRef,
+    onUserTranscript: (text) => {
+      setMessages((current) => [...current, { role: "guest", text }]);
+    },
+    onAssistantTranscript: (text) => {
+      setMessages((current) => [...current, { role: "host", text }]);
+    },
+  });
+  const voiceActive = !["idle", "error"].includes(voice.status);
 
   async function send(text: string) {
     const msg = text.trim();
@@ -88,7 +110,7 @@ export function ConciergeChat({
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-warmwhite" />
         </span>
         <div>
-          <p className="font-serif text-xl leading-none">AI Concierge</p>
+          <p className="font-serif text-xl leading-none">TALA Concierge</p>
           <p className="text-xs text-warmwhite/70">Online · 24/7</p>
         </div>
       </div>
@@ -141,6 +163,33 @@ export function ConciergeChat({
                 ))}
               </div>
             )}
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-line bg-surface/30 px-4 py-2">
+            <span className="flex min-w-0 items-center gap-2 text-xs text-muted">
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${
+                  voiceActive ? "animate-pulse bg-forest" : "bg-line"
+                }`}
+              />
+              <span className="truncate">
+                {voice.error ?? VOICE_STATUS[voice.status]}
+              </span>
+            </span>
+            {voice.supported && (
+              <button
+                type="button"
+                onClick={voiceActive ? voice.stop : voice.start}
+                disabled={voice.status === "connecting"}
+                className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition disabled:opacity-50 ${
+                  voiceActive
+                    ? "border border-line bg-bg text-ink hover:bg-surface"
+                    : "bg-forest text-warmwhite hover:opacity-90"
+                }`}
+              >
+                {voiceActive ? "End voice" : "Talk to TALA"}
+              </button>
+            )}
+            <audio ref={audioRef} autoPlay className="hidden" />
           </div>
           <form
             className="flex gap-2 border-t border-line p-4"

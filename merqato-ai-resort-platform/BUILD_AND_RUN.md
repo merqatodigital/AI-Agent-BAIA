@@ -54,6 +54,7 @@ ADMIN_API_TOKEN                # shared secret for the admin knowledge API
                                # (503) until this is set
 TENANT_SLUG
 TENANT_DOMAIN
+VOICE_INTERNAL_API_KEY         # shared only with the voice service
 ```
 
 Runtime backend selection: when `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
@@ -86,6 +87,7 @@ OPENROUTER_API_KEY            # server-only
 OPENROUTER_BASE_URL
 OPENROUTER_MODEL
 AGENT_API_URL                 # BFF -> FastAPI target, default http://localhost:8000
+VOICE_API_URL                 # BFF -> speech-to-speech, default http://localhost:8765
 ADMIN_API_TOKEN               # server-only; forwarded as X-Admin-Token by the
                               # /api/admin/knowledge BFF proxy (never sent to
                               # the browser)

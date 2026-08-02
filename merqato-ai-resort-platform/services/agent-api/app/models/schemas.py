@@ -39,3 +39,16 @@ class OpenRouterValidateResponse(BaseModel):
     valid: bool
     model: str | None = None
     message: str
+
+
+class VoiceChatMessage(BaseModel):
+    role: str
+    content: str | list[dict[str, object]] | None = None
+
+
+class VoiceChatCompletionRequest(BaseModel):
+    """Subset of Chat Completions accepted from speech-to-speech."""
+
+    model: str = "tala-agent"
+    messages: list[VoiceChatMessage]
+    stream: bool = False
