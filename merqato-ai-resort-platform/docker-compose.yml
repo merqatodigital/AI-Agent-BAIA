@@ -9,6 +9,28 @@ services:
       - ENVIRONMENT=development
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o-mini}
+      - VOICE_INTERNAL_API_KEY=${VOICE_INTERNAL_API_KEY:-development-voice-key}
+    restart: unless-stopped
+
+  # Optional realtime voice runtime. Kept in a profile because the first
+  # build downloads large speech dependencies and model weights.
+  voice-api:
+    profiles: ["voice"]
+    build:
+      context: ./services/voice-api
+    ports:
+      - "8765:8765"
+    environment:
+      - TALA_AGENT_API_URL=http://agent-api:8000/v1
+      - VOICE_INTERNAL_API_KEY=${VOICE_INTERNAL_API_KEY:-development-voice-key}
+      - VOICE_DEVICE=${VOICE_DEVICE:-cpu}
+      - VOICE_STT_MODEL=${VOICE_STT_MODEL:-small.en}
+      - VOICE_STT_COMPUTE_TYPE=${VOICE_STT_COMPUTE_TYPE:-int8}
+      - TALA_VOICE=${TALA_VOICE:-af_heart}
+      - VOICE_NUM_PIPELINES=${VOICE_NUM_PIPELINES:-1}
+      - SPEECH_TO_SPEECH_ICE_SERVERS=${SPEECH_TO_SPEECH_ICE_SERVERS:-}
+    depends_on:
+      - agent-api
     restart: unless-stopped
 
   # Next.js frontend (BFF proxy to agent-api via AGENT_API_URL).
@@ -20,6 +42,7 @@ services:
       - "3000:3000"
     environment:
       - AGENT_API_URL=http://agent-api:8000
+      - VOICE_API_URL=http://voice-api:8765
       - NEXT_PUBLIC_APP_URL=http://localhost:3000
     depends_on:
       - agent-api

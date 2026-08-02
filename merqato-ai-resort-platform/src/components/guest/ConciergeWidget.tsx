@@ -11,7 +11,7 @@ import { useState } from "react";
 export function ConciergeWidget() {
   const [messages, setMessages] = useState<
     { role: "guest" | "host"; text: string; requiresApproval?: boolean; escalationReason?: string | null }[]
-  >([{ role: "host", text: "Hello! I'm your MerQato concierge. Ask me about rooms, tours, dining, or transport." }]);
+  >([{ role: "host", text: "Hello! I'm TALA, your digital concierge. Ask me about rooms, tours, dining, or transport." }]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -57,7 +57,7 @@ export function ConciergeWidget() {
   return (
     <div className="card flex h-[480px] max-w-md flex-col p-0">
       <div className="rounded-t-2xl bg-accent px-5 py-4 text-warmwhite">
-        <p className="eyebrow text-warmwhite/70">AI Concierge</p>
+        <p className="eyebrow text-warmwhite/70">TALA Concierge</p>
         <p className="font-serif text-xl">Ask anything about your stay</p>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">

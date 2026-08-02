@@ -22,7 +22,7 @@ Autonomous build loop. Each item checked when its feature is production-quality
 13. [ ] Blog — CMS + Marketing Agent drafting (types + approval flow exist)
 14. [ ] Marketing Agent — UI to generate/review posts
 15. [ ] Revenue Agent — UI to suggest pricing/packages
-16. [ ] Voice Concierge — LiveKit + Pipecat + Whisper + Kokoro
+16. [~] Voice Concierge — Hugging Face speech-to-speech + WebRTC + Faster Whisper + Kokoro integrated; production gateway/TURN and load tests pending
 17. [ ] Multi-resort support — DataStore is per-resort; admin multi-tenant UI pending
 18. [ ] Production optimization — bundle/perf audit
 19. [ ] Documentation — deploy + template docs

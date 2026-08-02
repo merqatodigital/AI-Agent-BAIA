@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     # admin knowledge routes fail closed (503).
     admin_api_token: str = ""
 
+    # Shared secret used only by the isolated Hugging Face speech-to-speech
+    # service when it calls TALA through the OpenAI-compatible adapter.
+    # Development may run without it; non-development environments fail closed.
+    voice_internal_api_key: str = ""
+
     # Service
     service_name: str = "merqato-agent-api"
     log_level: str = "INFO"
