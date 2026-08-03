@@ -1,0 +1,64 @@
+{
+  "source_status": "user_provided_regional_intelligence",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "central_node": {
+    "name": "San Vicente Poblacion",
+    "role": "Administrative center and location of San Vicente Airport (SWL)",
+    "character": [
+      "authentic",
+      "quiet",
+      "largely undeveloped",
+      "local fishing town",
+      "scattered boutique stays"
+    ]
+  },
+  "nearby_zones": [
+    {
+      "name": "Alimanguan",
+      "direction_from_poblacion": "North",
+      "distance_km": 15,
+      "road_access": "Easy, flat, fully paved coastal road",
+      "typical_scooter_time_minutes": {
+        "min": 20,
+        "max": 25
+      },
+      "position": "Northern terminus of the 14.7 km Long Beach",
+      "character": [
+        "emerging surf town",
+        "traditional fishing village",
+        "unobstructed sunsets"
+      ],
+      "landmark": "Tandol Rock Islet with a swim-through cave"
+    },
+    {
+      "name": "Port Barton",
+      "direction_from_poblacion": "Southwest across the bay",
+      "terrain_constraint": "A mountain ridge blocks a direct land route.",
+      "road_route": {
+        "typical_time_hours": {
+          "min": 1.0,
+          "max": 1.5
+        },
+        "route_note": "Vehicles loop out toward the Roxas highway junction and back down."
+      },
+      "boat_route": {
+        "typical_time_minutes": {
+          "min": 10,
+          "max": 15
+        },
+        "transport_type": "Private outrigger boat",
+        "connection": "Port Barton to Poblacion or Panindigan Beach"
+      },
+      "character": [
+        "bohemian",
+        "established tourism enclave",
+        "socially active",
+        "bars",
+        "cafes",
+        "hostels",
+        "dive shops"
+      ]
+    }
+  ]
+}

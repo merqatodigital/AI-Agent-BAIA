@@ -64,6 +64,13 @@ class VectorClient(Protocol):
         points_selector: Any,
     ) -> Any: ...
 
+    def create_payload_index(
+        self,
+        collection_name: str,
+        field_name: str,
+        schema_type: Any,
+    ) -> Any: ...
+
     def query_points(
         self,
         collection_name: str,
@@ -151,18 +158,47 @@ class TenantQdrantStore:
         """Create the tenant collection if absent; verify config if present.
 
         Returns the resolved CollectionConfig. Fails safely when an existing
-        collection's vector dimension is incompatible.
+        collection's vector dimension is incompatible. Also ensures the payload
+        indexes needed for per-document vector deletion/search exist.
         """
         client = self._require_client()
         if client.collection_exists(self.collection_name):
             self._verify_compatible(client)
         else:
             client.create_collection(self.collection_name, self._vectors_config())
+        self.ensure_indexes()
         return CollectionConfig(
             name=self.collection_name,
             dimension=self._dimension,
             distance=self._distance,
         )
+
+    def ensure_indexes(self) -> None:
+        """Create idempotent payload indexes required by the store.
+
+        The retrieval filter (search) and per-document delete both filter on
+        payload keys; Qdrant requires each to be indexed or it rejects the
+        request with a 400. Indexing is a no-op when an index already exists.
+        """
+        client = self._require_client()
+        # Boolean payload fields need a "bool" index; everything else a
+        # "keyword" index. Qdrant rejects the retrieval/delete filter if the
+        # field is not indexed with a compatible type.
+        bool_fields = {"published", "guest_visible", "internal_only"}
+        for field in (
+            "document_id",
+            "tenant_id",
+            "verification_status",
+            "published",
+            "guest_visible",
+            "internal_only",
+        ):
+            schema = "bool" if field in bool_fields else "keyword"
+            try:
+                client.create_payload_index(self.collection_name, field, schema)
+            except Exception as exc:  # noqa: BLE001 - index may already exist
+                if "already exists" not in str(exc).lower():
+                    raise
 
     def _verify_compatible(self, client: VectorClient) -> None:
         info = client.get_collection(self.collection_name)
@@ -199,7 +235,13 @@ class TenantQdrantStore:
         return len(points)
 
     def delete_document_vectors(self, document_id: str) -> None:
-        """Delete all vectors for a superseded document version."""
+        """Delete all vectors for a superseded document version.
+
+        Ensures the collection and its payload indexes exist first — the
+        filtered delete requires the ``document_id`` index, which is only
+        created lazily on upsert otherwise.
+        """
+        self.ensure_collection()
         client = self._require_client()
         from qdrant_client.models import FieldCondition, Filter, MatchValue
 

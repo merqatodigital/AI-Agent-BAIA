@@ -1,7 +1,13 @@
+"""Guest concierge service entry point.
+
+This module exposes the public API that routes call. Historically it invoked
+ConciergeFlow directly; it now delegates to Hermes, BAIA's guest-facing agent.
+"""
+
 from __future__ import annotations
 
+from app.agents.hermes import Hermes
 from app.crews.concierge.flow import (
-    ConciergeFlow,
     OpenRouterNotConfigured,
     TenantNotResolvable,
 )
@@ -14,31 +20,15 @@ __all__ = [
 ]
 
 
-def run_concierge(req: ConciergeRequest) -> ConciergeResponse:
-    """Run the guest concierge pipeline via the CrewAI Flow.
+_sync_hermes = Hermes()
 
-    The Flow (app.crews.concierge.flow.ConciergeFlow) owns orchestration:
-    credentials gate → tenant resolution → ConciergeCrew execution → safety
-    validation. This service adapts the API request/response contract and
-    preserves conversation_id untouched (no fabricated memory).
+
+def run_concierge(req: ConciergeRequest) -> ConciergeResponse:
+    """Run the guest concierge pipeline through Hermes.
+
+    Hermes (app.agents.hermes) wraps the CrewAI ConciergeCrew with BAIA's
+    persona, skill routing, safety boundaries, and typed response contract.
+    The conversation_id is preserved untouched; Hermes does not fabricate
+    server-side memory.
     """
-    flow = ConciergeFlow()
-    flow.kickoff(
-        inputs={
-            "resort_id": req.resort_id,
-            "conversation_id": req.conversation_id,
-            "message": req.message,
-            "locale": req.locale,
-        }
-    )
-    s = flow.state
-    return ConciergeResponse(
-        reply=s.reply,
-        intent=s.intent,
-        confidence=s.confidence,
-        sources=[],
-        proposed_actions=[],
-        requires_approval=s.requires_approval,
-        escalation_reason=s.escalation_reason,
-        conversation_id=s.conversation_id,
-    )
+    return _sync_hermes.assist(req)

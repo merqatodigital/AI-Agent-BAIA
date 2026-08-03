@@ -43,6 +43,20 @@ def _reset_knowledge_backend():
     reset_default_backend()
 
 
+# The repo ships a real .env (Supabase creds, admin token) that must NEVER be
+# used by the offline unit suite — tests are designed around the in-memory
+# backend and a disabled admin API. Neutralize those env vars so a present
+# .env does not silently route tests to the live DB or enable the admin API.
+# Tests that need the real Supabase/admin path set these explicitly.
+@pytest.fixture(autouse=True)
+def _neutralize_local_env(monkeypatch):
+    monkeypatch.setenv("SUPABASE_URL", "")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    monkeypatch.setenv("ADMIN_API_TOKEN", "")
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    yield
+
+
 @pytest.fixture
 def client():
     with TestClient(app) as c:
@@ -97,7 +111,7 @@ def mock_kickoff_with(monkeypatch):
 
 @pytest.fixture
 def set_openrouter_key(monkeypatch):
-    monkeypatch.setenv("OPENROUTER_API_KEY", "«redacted:sk-…»")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-openrouter-00000000000000000000")
     # Embedding provider construction is validated fail-closed in production;
     # tests satisfy it with a dummy key (no network call is ever made because
     # Crew.kickoff is mocked).

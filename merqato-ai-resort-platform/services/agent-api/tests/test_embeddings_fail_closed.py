@@ -27,6 +27,7 @@ def test_unsupported_provider_fails_closed(monkeypatch):
 def test_configured_openai_provider_is_returned(monkeypatch):
     monkeypatch.setenv("KNOWLEDGE_EMBEDDING_PROVIDER", "openai")
     monkeypatch.setenv("OPENAI_API_KEY", "test-embedding-key")
+    monkeypatch.setenv("KNOWLEDGE_EMBEDDING_MODEL", "text-embedding-3-small")
     provider = get_embedding_provider()
     assert isinstance(provider, OpenAIEmbeddingProvider)
     assert provider.dimension == 1536
@@ -37,6 +38,12 @@ def test_concierge_route_fails_closed_without_embeddings(
 ):
     monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test-not-real")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("KNOWLEDGE_EMBEDDING_PROVIDER", "openai")
+    # The baia_tenant fixture already populated the lru-cached settings with
+    # the .env defaults; clear so the overrides above take effect.
+    from app.config import get_settings
+
+    get_settings.cache_clear()
     r = client.post(
         "/v1/concierge/message",
         json={

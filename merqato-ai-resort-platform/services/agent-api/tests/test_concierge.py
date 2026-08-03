@@ -106,5 +106,5 @@ def test_openrouter_key_never_in_response_or_logs(
         )
     assert r.status_code == 200
     dumped = json.dumps(r.json())
-    assert "«redacted:sk-…»" not in dumped
-    assert "«redacted:sk-…»" not in caplog.text
+    assert "sk-test-openrouter-00000000000000000000" not in dumped
+    assert "sk-test-openrouter-00000000000000000000" not in caplog.text

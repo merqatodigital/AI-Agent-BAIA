@@ -1,0 +1,12 @@
+{
+  "source_status": "user_verified_operational_breakdown",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "guest_relation_leads": [
+    "Sir Ron",
+    "Kat/Cath"
+  ],
+  "administrative_host": "Irina",
+  "contact_delivery_rule": "Escalation cell numbers and full property contact details are sent to guests in the digital check-in packet 24 hours before arrival.",
+  "notes": "Immediate on-site guest issues are handled face-to-face by Sir Ron and Kat/Cath."
+}

@@ -64,6 +64,15 @@ class FakeVectorClient:
         if collection_name in self.collections:
             self.collections[collection_name]["vectors"] = {}
 
+    def create_payload_index(
+        self,
+        collection_name: str,  # noqa: ARG002
+        field_name: str,  # noqa: ARG002
+        schema_type: Any,  # noqa: ARG002
+    ) -> None:
+        # In-memory double: indexing is a no-op.
+        return None
+
     def query_points(
         self,
         collection_name: str,

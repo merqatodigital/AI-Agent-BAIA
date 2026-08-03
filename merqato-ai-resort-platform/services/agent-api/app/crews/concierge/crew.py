@@ -107,6 +107,21 @@ class ConciergeCrew:
         )
 
     def _build_llm(self) -> LLM:
+        # Local LLM via Ollama's OpenAI-compatible /v1 API — no external key,
+        # used when no OpenRouter key is configured (e.g. on-machine demos).
+        if not self._openrouter_api_key and self.settings.ollama_base_url:
+            base = self.settings.ollama_base_url.rstrip("/")
+            return LLM(
+                model=f"openai/{self.settings.ollama_model}",
+                provider="openai",
+                api_base=f"{base}/v1",
+                api_key="ollama",  # Ollama ignores the key; placeholder only
+                temperature=0.3,
+            )
+        if not self._openrouter_api_key:
+            raise RuntimeError(
+                "No LLM configured: set OPENROUTER_API_KEY or OLLAMA_BASE_URL"
+            )
         return LLM(
             model=self.settings.openrouter_model,
             provider="openrouter",

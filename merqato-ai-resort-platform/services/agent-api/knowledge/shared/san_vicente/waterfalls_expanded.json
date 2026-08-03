@@ -1,0 +1,50 @@
+{
+  "source_status": "user_provided_regional_intelligence",
+  "source_date": "2026-07-08",
+  "owner_verified": true,
+  "waterfalls": [
+    {
+      "name": "Pamuayan Falls",
+      "area": "Near Port Barton",
+      "access": "Typically combined with a Port Barton land day-trip",
+      "walk": {
+        "difficulty": "Relatively easy and flat",
+        "duration_minutes": {
+          "min": 30,
+          "max": 40
+        },
+        "setting": "Shaded jungle walk along a riverbed"
+      },
+      "features": {
+        "height_m": 8,
+        "pool": "Deep, wide, cold freshwater pool suitable for swimming"
+      },
+      "live_check_fields": [
+        "trail condition",
+        "water flow",
+        "weather",
+        "guide need"
+      ]
+    },
+    {
+      "name": "Bigaho / Ipanganan Waterfalls",
+      "area": "Northern San Vicente / Alimanguan-Port Barton area",
+      "access": "Further north; Bigaho is known for a maintained wooden eco-walkway from the road",
+      "walk": {
+        "difficulty": "Minimal and accessible"
+      },
+      "features": {
+        "type": "Cascading tier system",
+        "setting": "Dense primary forest",
+        "pool": "Natural swimming pool at the base"
+      },
+      "live_check_fields": [
+        "access route",
+        "road condition",
+        "entry status",
+        "water flow",
+        "weather"
+      ]
+    }
+  ]
+}

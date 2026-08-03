@@ -1,0 +1,32 @@
+# Secrets and local env
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Tests / tooling not needed in production image
+tests/
+scripts/
+docs/
+fixtures/
+skills/
+knowledge/

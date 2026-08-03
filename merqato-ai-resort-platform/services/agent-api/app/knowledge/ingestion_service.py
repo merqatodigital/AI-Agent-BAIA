@@ -58,10 +58,16 @@ def build_embedded_points(
     payload contract lives in exactly one place.
     """
     points: list[dict[str, Any]] = []
+    import uuid
+
     for c, vec in zip(chunks, vectors, strict=True):
+        # Qdrant point IDs must be an unsigned int or a UUID. Derive a stable
+        # UUID from the version id + chunk index so re-publishing the same
+        # chunk yields the same point id (idempotent upsert, no duplicates).
+        point_id = uuid.uuid5(uuid.NAMESPACE_URL, f"{version_row['id']}:{c.chunk_index}")
         points.append(
             {
-                "id": f"{version_row['id']}-{c.chunk_index}",
+                "id": str(point_id),
                 "vector": vec,
                 "payload": {
                     "tenant_id": ctx.tenant_id,

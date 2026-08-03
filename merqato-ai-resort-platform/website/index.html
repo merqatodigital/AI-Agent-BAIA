@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hermes · BAIA Beachfront Concierge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sand: #f7f3ed;
+      --ocean: #0f4c5c;
+      --ocean-light: #1b6b7d;
+      --coral: #e07a5f;
+      --text: #2b2b2b;
+      --muted: #6b6b6b;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--sand);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--ocean);
+      color: var(--white);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      width: 2.25rem;
+      height: 2.25rem;
+      background: var(--coral);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .brand h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .brand span {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .status {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr min(560px, 100%) 1fr;
+      padding: 1.5rem;
+    }
+
+    .chat-panel {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      border-radius: 1.25rem;
+      box-shadow: 0 8px 30px rgba(15, 76, 92, 0.08);
+      overflow: hidden;
+      height: calc(100vh - 8rem);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.guest {
+      align-self: flex-end;
+      background: var(--ocean);
+      color: var(--white);
+      border-bottom-right-radius: 0.25rem;
+    }
+
+    .message.hermes {
+      align-self: flex-start;
+      background: var(--sand);
+      color: var(--text);
+      border-bottom-left-radius: 0.25rem;
+    }
+
+    .message.system {
+      align-self: center;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .input-area {
+      border-top: 1px solid #eee;
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 999px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--ocean-light);
+    }
+
+    button {
+      border: none;
+      background: var(--coral);
+      color: var(--white);
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #c96a52; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .typing {
+      display: inline-flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+
+    .typing span {
+      width: 0.4rem;
+      height: 0.4rem;
+      background: var(--muted);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">H</div>
+      <div>
+        <h1>Hermes</h1>
+        <span>BAIA Beachfront Concierge</span>
+      </div>
+    </div>
+    <div class="status" id="status">Checking...</div>
+  </header>
+
+  <main>
+    <div class="chat-panel">
+      <div class="messages" id="messages">
+        <div class="message system">Today</div>
+      </div>
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Ask Hermes anything about BAIA..." autocomplete="off" />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>Powered by MerQato · Verified resort knowledge only · San Vicente, Palawan</footer>
+
+  <script>
+    const messages = document.getElementById('messages');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const status = document.getElementById('status');
+
+    const API_BASE = 'http://localhost:8000';
+    const RESORT_ID = 'baia-resort';
+    const CONVERSATION_ID = 'web-' + Math.random().toString(36).slice(2, 10);
+
+    function append(text, sender) {
+      const div = document.createElement('div');
+      div.className = `message ${sender}`;
+      div.textContent = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
+    }
+
+    function showTyping() {
+      const div = document.createElement('div');
+      div.className = 'message hermes';
+      div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
+    }
+
+    async function checkHealth() {
+      try {
+        const r = await fetch(`${API_BASE}/health`, { method: 'GET' });
+        if (r.ok) {
+          status.textContent = 'Connected';
+          status.style.background = 'rgba(46, 204, 113, 0.25)';
+        } else {
+          throw new Error('unhealthy');
+        }
+      } catch {
+        status.textContent = 'API offline';
+        status.style.background = 'rgba(231, 76, 60, 0.25)';
+      }
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      append(text, 'guest');
+      input.value = '';
+      sendBtn.disabled = true;
+      const typing = showTyping();
+
+      try {
+        const r = await fetch(`${API_BASE}/v1/concierge/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resort_id: RESORT_ID,
+            conversation_id: CONVERSATION_ID,
+            message: text,
+            locale: 'en'
+          })
+        });
+
+        typing.remove();
+
+        if (!r.ok) {
+          const err = await r.text();
+          append(`Hermes couldn't answer (${r.status}). Is the backend configured with an API key?`, 'hermes');
+          console.error(err);
+          return;
+        }
+
+        const data = await r.json();
+        append(data.reply, 'hermes');
+      } catch (e) {
+        typing.remove();
+        append("Hermes can't reach the backend. Make sure the API is running on localhost:8000.", 'hermes');
+        console.error(e);
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    checkHealth();
+    append("Hello! I'm Hermes, your host at BAIA. How can I help make your stay in San Vicente wonderful?", 'hermes');
+    input.focus();
+  </script>
+</body>
+</html>
